@@ -21,53 +21,42 @@ const int ledPin =  13;
 volatile bool on = true;
 
 
-void setup(){
+void setup() {
 
-    Wire.begin();
-    // lis.i2cAddress = 25;
-  
-    pinMode(ledPin, OUTPUT);
-    lis.setPowerStatus(LR_POWER_NORM);
-    lis.setYEnable(true);
+  Wire.begin();
+  // lis.i2cAddress = 25;
 
-    // Registres
-    lis.writeReg(0x22, 0x00);
-    // lis.writeReg(0x30, 0x2A);
-    lis.writeReg(0x30, 0x08);
-    lis.writeReg(0x32, 0x02);
-    lis.writeReg(0x33, 0x02);
-    
-    Serial.begin(9600);    
-    attachInterrupt(0, movment, RISING);
-    // attachInterrupt(0, movment, HIGH);
+  pinMode(ledPin, OUTPUT);
+  lis.setPowerStatus(LR_POWER_NORM);
+  lis.setYEnable(true);
+
+  // Registres
+  // lis.writeReg(0x22, 0x00);
+  // lis.writeReg(0x30, 0x2A);
+  lis.writeReg(0x30, 0x08);
+  lis.writeReg(0x32, 0x01);
+  // lis.writeReg(0x33, 0x08);
+  lis.writeReg(0x33, 0x06);
+
+  Serial.begin(9600);
+  // attachInterrupt(0, movment, RISING);
+  attachInterrupt(0, movment, CHANGE);
+  Serial.println("FIN INIT");
 
 }
 
 
 void movment()
 {
-  detachInterrupt(0);
-  on=true;
-  attachInterrupt(0, movment, RISING);
-} 
-
-void loop(){
+  sei();
   int16_t y;
-  while(true)
-  {
-    if(on == true)
-    {
-      lis.getYValue(&y);      
-      Serial.print("Y Value: ");
-      Serial.print(y);
-      Serial.println(" milli Gs");
-      if (y>0) digitalWrite(ledPin, HIGH);
-      else digitalWrite(ledPin, LOW);
-      if (y>0) Serial.println("avance");
-      else Serial.println("recule");
-      on = false;
-    }
-  }
+  lis.getYValue(&y);
+  cli();
+  Serial.print("Y Value: ");
+  Serial.print(y);
+  Serial.println(" milli Gs");
 }
 
-
+void loop() {
+   // Nothing to do
+}
