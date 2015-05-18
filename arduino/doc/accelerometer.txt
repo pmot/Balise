@@ -1,0 +1,15 @@
+Pour enregistrer les données de l'accéléromètre et les exploiter (ie. tester des filtres) :
+1/ téléverser le sketch poll_LIS331.ino
+2/ pour enregistrer dans un fichier :
+
+	cu -l /dev/ttyUSB0 -s 115200  | tee -a nom_fichier
+
+	Adapter le tty le cas échéant.
+
+3/ pour visualiser, installer Kst :
+
+	apt-get install kst
+
+	puis :
+
+	kst2 nom_fichier
