@@ -1,3 +1,5 @@
+Capture des données
+===================
 Pour enregistrer les données de l'accéléromètre et les exploiter (ie. tester des filtres) :
 1/ téléverser le sketch poll_LIS331.ino
 2/ pour enregistrer dans un fichier :
