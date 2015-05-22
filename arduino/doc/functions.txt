@@ -1,15 +1,26 @@
-Liste des API par fonction
+=========================
 
+   #    ######    ###
+  # #   #     #    #
+ #   #  #     #    #
+#     # ######     #
+####### #          #
+#     # #          #
+#     # #         ###
+
+Liste des API par fonction
+==========================
 
 GPS
+===
 	Convertion ?
 	Mise en forme (structure C)
 	Fonction de lecture (de quoi, c'est le GPS qui envoie ..)
 	
 
 
-
 ACCELEROMETRE
+=============
 	Fonction appelée dans l'interuption
 		- elle lit les données
 		- renvoie la valeur lue
@@ -18,15 +29,16 @@ ACCELEROMETRE
 	
 
 WIFI
-
+====
 
 
 
 GSM
-
+===
 
 
 CAPTEUR DE TEMPERATURE
+======================
 
 	GetTemperature
 		int GetTemperature()
