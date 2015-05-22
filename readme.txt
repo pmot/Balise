@@ -1,4 +1,3 @@
-# Balise
 TODO:
 
 Décrire ici, l'organisation du projet.
