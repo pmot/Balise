@@ -1,0 +1,30 @@
+Liste des API par fonction
+
+
+GPS
+	Convertion ?
+	Mise en forme (structure C)
+	Fonction de lecture (de quoi, c'est le GPS qui envoie ..)
+	
+
+
+
+ACCELEROMETRE
+
+
+
+WIFI
+
+
+
+
+GSM
+
+
+
+CAPTEUR DE TEMPERATURE
+
+	GetTemperature
+		int GetTemperature()
+	
+		Renvoie la température relevée 
