@@ -10,8 +10,12 @@ GPS
 
 
 ACCELEROMETRE
-
-
+	Fonction appelée dans l'interuption
+		- elle lit les données
+		- renvoie la valeur lue
+	une autre fonction doit en tenant compte de la vitesse courante remontée par le GPS indiquer si la balise avant ou recule
+		si doute, renvoyer une valeur "inconnue"
+	
 
 WIFI
 
