@@ -21,6 +21,16 @@ build/
 	balise à distance;
 	donc partager le matériel.
 
+data/
+	Toutes données capturées.
+	
+	Nommage :
+		geoloc-"origine"-"destination"-"date".txt
+	
+	"origine" -> nom de la gare début de capture
+	"destination" -> nom de la gare de fin de capture
+	"date" -> format YYYYMMDD
+
 TODO :
 Prévoir une section dédiée à tout ce qui est alim, économie d'énergie et autre ?
 
