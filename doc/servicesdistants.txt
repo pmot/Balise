@@ -1,0 +1,12 @@
+Les services distants
+
+
+WS Géoloc
+=========
+
+	RESTFULL POST
+	JSON
+	
+	http://www.geolocsc.com/pushgeoloc
+	
+	
