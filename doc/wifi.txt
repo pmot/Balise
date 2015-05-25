@@ -1,0 +1,7 @@
+AP suiveurs
+===========
+
+	Les appareils configurés en AP à bord doivent être éliminés.
+	Les AP fixes deviennent invisibles en quelques secondes.
+	Toute AP visible pendant 1 mn, doit être écartée.
+
