@@ -1,0 +1,9 @@
+#define ARCH		ATMEGA328
+#define PLATFORM	ARDUINO
+#define BOARD		PRO
+
+#define	WIFI_SCAN	// ENABLED
+#define	GSP		// ENABLED
+#define	ACCELEROMETER	// ENABLED
+// #define	CELLULAR_SMS	// DISABLED
+#define	CELLULAR_DATA	// ENABLED
