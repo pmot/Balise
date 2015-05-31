@@ -30,7 +30,7 @@ void loop() {
   wifly.sendCommand("scan\r");
   while (scanencours) {
     if(wifly.receive((uint8_t *)&c, 1, 300) > 0)
-        Serial.print((char)c);
+        if((c>0) && (c<128)) Serial.print((char)c);
     scanencours = automate();
   }
 
