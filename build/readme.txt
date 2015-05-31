@@ -1,2 +1,3 @@
-ici, mettre ce qu'il faut pour construire la balise.
-prévoir un build-remote pour construire une balise à distance.
+Pour construire et téléverser le code, se placer dans ce répertoire, puis : 
+
+	usr@cptr ~/path to/Balise/build $ ./build.sh

@@ -1,9 +1,9 @@
-#define ARCH		ATMEGA328
-#define PLATFORM	ARDUINO
-#define BOARD		PRO
+# Linux and bash and C friedly at all
+# Please be free to extend at other OS and make 'it' script engines
+PLATFORM=ARDUINO
 
-#define	WIFI_SCAN	// ENABLED
-#define	GSP		// ENABLED
-#define	ACCELEROMETER	// ENABLED
-// #define	CELLULAR_SMS	// DISABLED
-#define	CELLULAR_DATA	// ENABLED
+WIFI_SCAN=1
+GSP=1
+ACCELEROMETER=1
+CELLULAR_SMS=0
+CELLULAR_DATA=1
