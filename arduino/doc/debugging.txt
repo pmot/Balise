@@ -1,0 +1,28 @@
+Mode debug
+==========
+Description du mode debug.
+
+Fonctionnement
+--------------
+Les messages de debug sont envoyés par WiFI.
+Car :
+- Le port UART de la MCU est utilisé par un module ;
+- Réutilise un module déjà présent, pas de matériel supplémentaire.
+
+Requis
+------
+- Une AP, configurée en mode OPEN, SSID debuggeloc, fournissant les ip
+  en DHCP, réseau 192.168.0.0/24 ;
+- Un terminal, en écoute sur le port UDP/614
+
+Protocole
+---------
+La balise transmet les données en UDP sur le port syslog, au format syslog.
+
+Activation
+----------
+TODO:
+L'activation devrait être décidée dans le système de build.
+En passant la variable DEBUG au compilateur.
+IP : Adresse du terminal de maintenance. (pas de découverte automatique.)
+
