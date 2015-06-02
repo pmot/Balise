@@ -1,0 +1,23 @@
+Les GPS données envoyées. 
+
+Fréquence
+=========
+Conditions d'envoi
+------------------
+fix = 1 ou 2.
+1 -> fix GPS
+2 -> fix DGPS
+
+Trames
+======
+$GPRMC
+------
+Le minimum pour la localisation.
+
+$GPGSA
+------
+Indications sur la fiabilité.
+
+$GPGGA
+------
+Indications concernant les satellites.
