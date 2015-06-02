@@ -1,6 +1,7 @@
 ARDUINO_DIR = ${HOME}/Arduino
 ARDUINO_CORE_PATH = ${ARDUINO_DIR}/hardware/arduino/avr/cores/arduino
 ARDUINO_VAR_PATH = ${ARDUINO_DIR}/hardware/arduino/avr/variants/standard
+AVR_TOOLS_DIR = ${ARDUINO_DIR}/hardware/tools/avr
 #Bug !
 #ARDUINO_LIB_PATH = ${ARDUINO_DIR}/hardware/arduino/avr/libraries
 #USER_LIB_PATH = ${ARDUINO_DIR}/libraries
