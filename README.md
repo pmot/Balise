@@ -1,35 +1,20 @@
 # Balise
-TODO:
-
-Décrire ici, l'organisation du projet.
-Si vous trouvez un readme.txt dans un répertoire, lisez le.
+Balise GPS avec système de localisation par SSID, CellID.
+Détection du mouvement par accéléromètre afin de détecter le sens de la marche.
 
 doc/
+----
 	Vous y trouverez la description du fonctionnement de la Balise.
-	Contient aussi une description des outils. C'est l'occasion d'y placer
-	des procédés.
-	Cf. TODO en début de ce doc.
-
+	Contient aussi une description des outils.
 arduino/
-	Pourquoi "arduino", car à ce stade du projet, le MCU est une Arduino
+--------
+	Pourquoi "arduino", car à ce stade du projet, la MCU est une Arduino
 	Pro.
-	Contient tout ce qui est lié au matériel, y compris les capteurs et
-	interfaces de communication.
+	Contient tout ce qui est lié au matériel.
 
 build/
-	A voir.
-	L'idée étant de pouvoir "compiler", et téléverser le projet sur une
-	balise à distance;
-	donc partager le matériel.
-
-TODO :
+------
+	Contient le script build.sh pour compiler et téléverser le projet sur la MCU.
+TODO
+====
 Prévoir une section dédiée à tout ce qui est alim, économie d'énergie et autre ?
-
-	
-
-	
-	
-
-
-
-	
