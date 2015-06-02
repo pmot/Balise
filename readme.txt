@@ -16,10 +16,7 @@ arduino/
 	interfaces de communication.
 
 build/
-	A voir.
-	L'idée étant de pouvoir "compiler", et téléverser le projet sur une
-	balise à distance;
-	donc partager le matériel.
+	Pour construire le projet et téléverser sur la MCU.
 
 data/
 	Toutes données capturées.
