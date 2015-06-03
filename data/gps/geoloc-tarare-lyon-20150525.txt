@@ -5938,7 +5938,3 @@ EndWifi
 4.859231   
 40.48 
 EndGPS
-Connected.
-Connected.
-
-Disconnected.

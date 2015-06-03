@@ -7,6 +7,7 @@ AVR_TOOLS_DIR = ${ARDUINO_DIR}/hardware/tools/avr
 #USER_LIB_PATH = ${ARDUINO_DIR}/libraries
 USER_LIB_PATH = ${ARDUINO_DIR}/hardware/arduino/avr/libraries
 ARDUINO_LIBS = SoftwareSerial WiFi_Shield-master 
+OBJDIR = ${HOME}/BaliseBuild
 BOARDS_TXT = ${ARDUINO_DIR}/hardware/arduino/avr/boards.txt
 BOARD_TAG = pro.menu.cpu.16MHzatmega328
 ARDUINO_PORT = /dev/ttyUSB*
