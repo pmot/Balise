@@ -7,6 +7,4 @@ WS Géoloc
 	RESTFULL POST
 	JSON
 	
-	http://www.geolocsc.com/pushgeoloc
-	
-	
+	http://www.geolocsp.fr/balise/putgeoloc.php
