@@ -1,6 +1,6 @@
 # Balise
 Balise GPS avec système de localisation par SSID, CellID.
-Détection du mouvement par accéléromètre afin de détecter le sens de la marche.
+Détection du sens de la marche par accéléromètre.
 
 doc/
 ----
