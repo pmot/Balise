@@ -1,5 +1,4 @@
-# Linux and bash and C friedly at all
-# Please be free to extend at other OS and make 'it' script engines
+# Fichier de configuration principal du système de build
 PLATFORM=ARDUINO
 
 WIFI_SCAN=1

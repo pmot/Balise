@@ -3,10 +3,14 @@
 #include <SoftwareSerial.h>
 #include <WiFly.h>
 
+#include "wifi_scan_ap.h"
+
 // the setup function runs once when you press reset or power the board
 void setup() {
+  bool test_ap_lib = false;
   // initialize digital pin 13 as an output.
   pinMode(13, OUTPUT);
+  // test_ap_lib = dummy();
 }
 
 // the loop function runs over and over again forever

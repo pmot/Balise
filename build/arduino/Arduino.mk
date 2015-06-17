@@ -400,14 +400,25 @@ ifndef AVR_TOOLS_PATH
     AVR_TOOLS_PATH    = $(AVR_TOOLS_DIR)/bin
 endif
 
-ARDUINO_LIB_PATH  = $(ARDUINO_DIR)/libraries
-#ARDUINO_LIB_PATH  = $(ARDUINO_DIR)/hardware/arduino/avr/libraries
-$(call show_config_variable,ARDUINO_LIB_PATH,[COMPUTED],(from ARDUINO_DIR))
+ifndef ARDUINO_LIB_PATH
+    ARDUINO_LIB_PATH  = $(ARDUINO_DIR)/hardware/arduino/avr/libraries
+    $(call show_config_variable,ARDUINO_LIB_PATH,[COMPUTED],(from ARDUINO_DIR))
+else
+    $(call show_config_variable,ARDUINO_LIB_PATH,[USER])
+endif
 ifndef ARDUINO_CORE_PATH
     ARDUINO_CORE_PATH = $(ARDUINO_DIR)/hardware/arduino/avr/cores/arduino
     $(call show_config_variable,ARDUINO_CORE_PATH,[DEFAULT])
 else
     $(call show_config_variable,ARDUINO_CORE_PATH,[USER])
+endif
+
+# Librairies du projet
+ifndef PROJECT_LIB_PATH
+    PROJECT_LIB_PATH  = ../librairies
+    $(call show_config_variable,PROJECT_LIB_PATH,[DEFAULT])
+else
+    $(call show_config_variable,PROJECT_LIB_PATH,[USER])
 endif
 
 # Third party hardware and core like ATtiny or ATmega 16
@@ -655,7 +666,11 @@ ifndef ARDUINO_LIBS
         $(shell sed -ne "s/^ *\# *include *[<\"]\(.*\)\.h[>\"]/\1/p" $(LOCAL_SRCS)))
     ARDUINO_LIBS += $(filter $(notdir $(wildcard $(USER_LIB_PATH)/*)), \
         $(shell sed -ne "s/^ *\# *include *[<\"]\(.*\)\.h[>\"]/\1/p" $(LOCAL_SRCS)))
+    ARDUINO_LIBS += $(filter $(notdir $(wildcard $(PROJECT_LIB_PATH)/*)), \
+        $(shell sed -ne "s/^ *\# *include *[<\"]\(.*\)\.h[>\"]/\1/p" $(LOCAL_SRCS)))
 endif
+
+
 
 ########################################################################
 # Serial monitor (just a screen wrapper)
@@ -733,31 +748,51 @@ MKDIR   = mkdir -p
 USER_LIBS      = $(wildcard $(patsubst %,$(USER_LIB_PATH)/%,$(ARDUINO_LIBS)))
 USER_LIB_NAMES = $(patsubst $(USER_LIB_PATH)/%,%,$(USER_LIBS))
 
+# Libs internes
+PROJECT_LIBS      = $(wildcard $(patsubst %,$(PROJECT_LIB_PATH)/%,$(ARDUINO_LIBS)))
+PROJECT_LIB_NAMES = $(patsubst $(PROJECT_LIB_PATH)/%,%,$(PROJECT_LIBS))
+
+#GDT DEBUG...
+$(call show_config_variable,PROJECT_LIB_NAMES,[USER])
+$(call show_config_variable,USER_LIB_NAMES,[USER])
+
 # Let user libraries override system ones.
 SYS_LIBS       = $(wildcard $(patsubst %,$(ARDUINO_LIB_PATH)/%,$(filter-out $(USER_LIB_NAMES),$(ARDUINO_LIBS))))
 SYS_LIB_NAMES  = $(patsubst $(ARDUINO_LIB_PATH)/%,%,$(SYS_LIBS))
 
 # Error here if any are missing.
-LIBS_NOT_FOUND = $(filter-out $(USER_LIB_NAMES) $(SYS_LIB_NAMES),$(ARDUINO_LIBS))
+LIBS_NOT_FOUND = $(filter-out $(USER_LIB_NAMES) $(SYS_LIB_NAMES) $(PROJECT_LIB_NAMES),$(ARDUINO_LIBS))
 ifneq (,$(strip $(LIBS_NOT_FOUND)))
-    $(error The following libraries specified in ARDUINO_LIBS could not be found (searched USER_LIB_PATH and ARDUINO_LIB_PATH): $(LIBS_NOT_FOUND))
+    $(error The following libraries specified in ARDUINO_LIBS could not be found (searched PROJECT_LIB_PATH, USER_LIB_PATH and ARDUINO_LIB_PATH): $(LIBS_NOT_FOUND))
 endif
 
 SYS_LIBS           := $(wildcard $(SYS_LIBS) $(addsuffix /utility,$(SYS_LIBS)))
 USER_LIBS          := $(wildcard $(USER_LIBS) $(addsuffix /utility,$(USER_LIBS)))
+PROJECT_LIBS       := $(wildcard $(PROJECT_LIBS) $(addsuffix /utility,$(PROJECT_LIBS)))
+#GDT
+$(call show_config_variable,PROJECT_LIBS,[USER])
+
 SYS_INCLUDES        = $(patsubst %,-I%,$(SYS_LIBS))
 USER_INCLUDES       = $(patsubst %,-I%,$(USER_LIBS))
+PROJECT_INCLUDES    = $(patsubst %,-I%,$(PROJECT_LIBS))
+
+#GDT
+$(call show_config_variable,PROJECT_INCLUDES,[USER])
+
 LIB_C_SRCS          = $(wildcard $(patsubst %,%/*.c,$(SYS_LIBS)))
 LIB_CPP_SRCS        = $(wildcard $(patsubst %,%/*.cpp,$(SYS_LIBS)))
 USER_LIB_CPP_SRCS   = $(wildcard $(patsubst %,%/*.cpp,$(USER_LIBS)))
 USER_LIB_C_SRCS     = $(wildcard $(patsubst %,%/*.c,$(USER_LIBS)))
+PROJECT_LIB_CPP_SRCS= $(wildcard $(patsubst %,%/*.cpp,$(PROJECT_LIBS)))
+PROJECT_LIB_C_SRCS  = $(wildcard $(patsubst %,%/*.c,$(PROJECT_LIBS)))
 LIB_OBJS            = $(patsubst $(ARDUINO_LIB_PATH)/%.c,$(OBJDIR)/libs/%.o,$(LIB_C_SRCS)) \
                       $(patsubst $(ARDUINO_LIB_PATH)/%.cpp,$(OBJDIR)/libs/%.o,$(LIB_CPP_SRCS))
 USER_LIB_OBJS       = $(patsubst $(USER_LIB_PATH)/%.cpp,$(OBJDIR)/libs/%.o,$(USER_LIB_CPP_SRCS)) \
                       $(patsubst $(USER_LIB_PATH)/%.c,$(OBJDIR)/libs/%.o,$(USER_LIB_C_SRCS))
-
+PROJECT_LIB_OBJS    = $(patsubst $(PROJECT_LIB_PATH)/%.cpp,$(OBJDIR)/libs/%.o,$(PROJECT_LIB_CPP_SRCS)) \
+                      $(patsubst $(PROJECT_LIB_PATH)/%.c,$(OBJDIR)/libs/%.o,$(PROJECT_LIB_C_SRCS))
 # Dependency files
-DEPS                = $(LOCAL_OBJS:.o=.d) $(LIB_OBJS:.o=.d) $(USER_LIB_OBJS:.o=.d) $(CORE_OBJS:.o=.d)
+DEPS                = $(LOCAL_OBJS:.o=.d) $(LIB_OBJS:.o=.d) $(USER_LIB_OBJS:.o=.d) $(PROJECT_LIB_OBJS:.o=.d) $(CORE_OBJS:.o=.d)
 
 # Optimization level for the compiler.
 # You can get the list of options at http://www.nongnu.org/avr-libc/user-manual/using_tools.html#gcc_optO
@@ -786,7 +821,7 @@ endif
 # Using += instead of =, so that CPPFLAGS can be set per sketch level
 CPPFLAGS      += -$(MCU_FLAG_NAME)=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(ARDUINO_VERSION) \
         -I. -I$(ARDUINO_CORE_PATH) -I$(ARDUINO_VAR_PATH)/$(VARIANT) \
-        $(SYS_INCLUDES) $(USER_INCLUDES) -Wall -ffunction-sections \
+        $(SYS_INCLUDES) $(USER_INCLUDES) $(PROJECT_INCLUDES) -Wall -ffunction-sections \
         -fdata-sections
 
 ifdef DEBUG
@@ -895,6 +930,14 @@ $(OBJDIR)/libs/%.o: $(USER_LIB_PATH)/%.cpp
 	$(CC) -MMD -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 
 $(OBJDIR)/libs/%.o: $(USER_LIB_PATH)/%.c
+	@$(MKDIR) $(dir $@)
+	$(CC) -MMD -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+
+$(OBJDIR)/libs/%.o: $(PROJECT_LIB_PATH)/%.cpp
+	@$(MKDIR) $(dir $@)
+	$(CC) -MMD -c $(CPPFLAGS) $(CFLAGS) $< -o $@
+
+$(OBJDIR)/libs/%.o: $(PROJECT_LIB_PATH)/%.c
 	@$(MKDIR) $(dir $@)
 	$(CC) -MMD -c $(CPPFLAGS) $(CFLAGS) $< -o $@
 

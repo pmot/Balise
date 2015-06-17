@@ -1,9 +1,10 @@
 ARDUINO_DIR = ${HOME}/Arduino
-#Bug !
-#ARDUINO_LIB_PATH = ${ARDUINO_DIR}/hardware/arduino/avr/libraries
-#USER_LIB_PATH = ${ARDUINO_DIR}/libraries
-USER_LIB_PATH = ${ARDUINO_DIR}/hardware/arduino/avr/libraries
-ARDUINO_LIBS = SoftwareSerial WiFi_Shield-master 
+# Répertoire des librairies externes
+USER_LIB_PATH = ${ARDUINO_DIR}/libraries
+# Répertoire des librairies internes
+PROJECT_LIB_PATH = ../libraries
+#PROJECT_LIBS = wifi_scan_ap
+ARDUINO_LIBS = SoftwareSerial WiFi_Shield-master wifi_scan_ap
 OBJDIR = ${HOME}/BaliseBuild
 BOARD_TAG = pro.menu.cpu.16MHzatmega328
 ARDUINO_PORT = /dev/ttyUSB*

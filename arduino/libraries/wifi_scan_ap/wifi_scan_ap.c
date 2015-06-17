@@ -1,1 +1,3 @@
-# Code qui permet de lister les AP visibles
+// Code qui permet de lister les AP visibles
+
+bool dummy() { return true; }
