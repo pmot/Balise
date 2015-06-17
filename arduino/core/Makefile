@@ -1,9 +1,9 @@
 ARDUINO_DIR = ${HOME}/Arduino
 # Répertoire des librairies externes
 USER_LIB_PATH = ${ARDUINO_DIR}/libraries
-# Répertoire des librairies internes
+# Répertoire des librairies internes, relatif au projet core
 PROJECT_LIB_PATH = ../libraries
-#PROJECT_LIBS = wifi_scan_ap
+# Liste non ordonnée des librairies internes, externes et système
 ARDUINO_LIBS = SoftwareSerial WiFi_Shield-master wifi_scan_ap
 OBJDIR = ${HOME}/BaliseBuild
 BOARD_TAG = pro.menu.cpu.16MHzatmega328
