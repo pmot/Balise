@@ -4,6 +4,7 @@
 #include <WiFly.h>
 
 #include "wifi_scan_ap.h"
+#include "sample_lib.h"
 
 // the setup function runs once when you press reset or power the board
 void setup() {

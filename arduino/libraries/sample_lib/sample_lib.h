@@ -1,6 +1,5 @@
-#ifndef __WIFI_SCAN_AP_H__
-#define __WIFI_SCAN_AP_H__
-
+#ifndef __SAMPLE_LIB_H__
+#define __SAMPLE_LIB_H__
 #include <Arduino.h>
 
 bool dummy();
