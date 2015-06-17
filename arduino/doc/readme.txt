@@ -1,6 +1,17 @@
 
 Ce répertoire contient de la documentation décrivant l'implémentation sur MCU Arduino Pro.
 
+Programmer
+==========
+Corps de la balise
+------------------
+Le programme principal est le projet "core" : core/core.ino.
+C'est le point d'entrée de la chaine de build.
+
+Librairies
+----------
+
+
 Communication avec le MCU Arduino Pro
 =====================================
 Interfaces
@@ -48,15 +59,6 @@ Application note : (à définir)
 
 Module WiFi
 ===========
-
-
-
-
-
-
-
-
-
 
 
 TODO :

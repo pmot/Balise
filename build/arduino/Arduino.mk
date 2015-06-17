@@ -670,8 +670,6 @@ ifndef ARDUINO_LIBS
         $(shell sed -ne "s/^ *\# *include *[<\"]\(.*\)\.h[>\"]/\1/p" $(LOCAL_SRCS)))
 endif
 
-
-
 ########################################################################
 # Serial monitor (just a screen wrapper)
 
@@ -887,6 +885,10 @@ endif
 ifneq (,$(strip $(ARDUINO_LIBS)))
     $(call arduino_output,-)
     $(call show_config_info,ARDUINO_LIBS =)
+endif
+
+ifneq (,$(strip $(PROJECT_LIB_NAMES)))
+    $(foreach lib,$(PROJECT_LIB_NAMES),$(call show_config_info,  $(lib),[USER]))
 endif
 
 ifneq (,$(strip $(USER_LIB_NAMES)))
@@ -1150,8 +1152,8 @@ $(OBJDIR):
 $(TARGET_ELF): 	$(LOCAL_OBJS) $(CORE_LIB) $(OTHER_OBJS)
 		$(CC) $(LDFLAGS) -o $@ $(LOCAL_OBJS) $(CORE_LIB) $(OTHER_OBJS) -lc -lm
 
-$(CORE_LIB):	$(CORE_OBJS) $(LIB_OBJS) $(USER_LIB_OBJS)
-		$(AR) rcs $@ $(CORE_OBJS) $(LIB_OBJS) $(USER_LIB_OBJS)
+$(CORE_LIB):	$(CORE_OBJS) $(LIB_OBJS) $(USER_LIB_OBJS) $(PROJECT_LIB_OBJS)
+		$(AR) rcs $@ $(CORE_OBJS) $(LIB_OBJS) $(USER_LIB_OBJS) $(PROJECT_LIB_OBJS)
 
 error_on_caterina:
 		$(ERROR_ON_CATERINA)
@@ -1221,7 +1223,7 @@ ifneq ($(strip $(AVRDUDE_ISP_FUSES_POST)),)
 endif
 
 clean:
-		$(REMOVE) $(LOCAL_OBJS) $(CORE_OBJS) $(LIB_OBJS) $(CORE_LIB) $(TARGETS) $(DEPS) $(USER_LIB_OBJS) ${OBJDIR}
+		$(REMOVE) $(LOCAL_OBJS) $(CORE_OBJS) $(LIB_OBJS) $(CORE_LIB) $(TARGETS) $(DEPS) $(USER_LIB_OBJS) $(PROJECT_LIB_OBJS) ${OBJDIR}
 
 size:	$(TARGET_HEX)
 		$(call avr_size,$(TARGET_ELF),$(TARGET_HEX))

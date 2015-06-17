@@ -10,7 +10,7 @@ void setup() {
   bool test_ap_lib = false;
   // initialize digital pin 13 as an output.
   pinMode(13, OUTPUT);
-  // test_ap_lib = dummy();
+  test_ap_lib = dummy();
 }
 
 // the loop function runs over and over again forever
