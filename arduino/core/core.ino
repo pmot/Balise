@@ -3,15 +3,17 @@
 #include <SoftwareSerial.h>
 #include <WiFly.h>
 
+#include "parameters.h"
 #include "wifi_scan_ap.h"
-#include "sample_lib.h"
+
+SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
+WiFly wifly(&wifiSerial);
+struct apEntry* apList;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
-  bool test_ap_lib = false;
   // initialize digital pin 13 as an output.
   pinMode(13, OUTPUT);
-  test_ap_lib = dummy();
 }
 
 // the loop function runs over and over again forever
@@ -20,4 +22,5 @@ void loop() {
   delay(1000);              // wait for a second
   digitalWrite(13, LOW);    // turn the LED off by making the voltage LOW
   delay(1000);              // wait for a second
+  apList = wifiScanAp(wifly);
 }
