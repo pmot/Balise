@@ -9,9 +9,9 @@ char* wifiScanReadLn(WiFly);
 
 struct apEntry
 {
-	int rssi = -1000;
-	char ssid[50] = "UNKNOWN";
-	char mac[18] = "xx:xx:xx:xx:xx:xx";
+	int rssi;
+	char ssid[50]; // = "UNKNOWN";
+	char mac[18];  // = "xx:xx:xx:xx:xx:xx";
 };
 
 #endif

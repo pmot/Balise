@@ -56,7 +56,10 @@ struct apEntry* wifiScanAp(WiFly myWiFly)
 				// SSID : champ 7
 				// TODO
 				// p = strtok(newLine, ",");
-				// apList[nbAdded].rssi = atoi(...);
+				// Test... je ne connais pas le compilo
+				apList[nbAdded].rssi = nbAdded; // atoi(...);
+				apList[nbAdded].mac = "xx.xx.xx.xx.xx.xx.xx";
+				aplist[nbAdded].ssid = "dummy";
 				nbAdded++;
 			}
 		}
@@ -68,6 +71,7 @@ struct apEntry* wifiScanAp(WiFly myWiFly)
   {
 	  // Mismatch, or truncated
   }
+  // Retourne un tableau de struct apEntry... Le format JSON est pour toi
   return apList;
 }
 
