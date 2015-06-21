@@ -3,10 +3,15 @@
 #include <SoftwareSerial.h>
 #include <WiFly.h>
 #include <TinyGPS.h>
+#include <LIS331.h>
+#include <Wire.h>
 
 #include "parameters.h"
 #include "wifi_scan_ap.h"
 #include "gps.h"
+
+// Accel
+LIS331 lis;
 
 // Wifi
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
@@ -25,12 +30,23 @@ void setup() {
   // allumage de la LED le temps de l'initialisation
   digitalWrite(13, HIGH);
   
-  // Initialisation des lignes serial
+  // Initialisation des lignes serial, i2c
   wifiSerial.begin(9600);
   gpsSerial.begin(9600);
+  Wire.begin();
   
   // Initialisation du Wifi
   wifly.reset();
+
+  // Accéléromètre
+  lis.setPowerStatus(LR_POWER_NORM);
+  lis.setYEnable(true);
+  // Registres
+  lis.writeReg(0x30, 0x08);
+  lis.writeReg(0x32, 0x01);
+  lis.writeReg(0x33, 0x06);
+  // Interruption
+  attachInterrupt(0, movment, CHANGE);
   
   // extinction de la LED à la fin de l'initialisation
   // on pourrait la faire clignoter en cas d'erreur durant cette phase
@@ -64,4 +80,17 @@ void loop() {
 #endif
 
   }
+}
+
+void movment()
+{
+  sei();
+  int16_t y;
+  lis.getYValue(&y);
+  cli();
+#ifdef DEBUG_TO_CONSOLE
+  Serial.print("Y Value: ");
+  Serial.print(y);
+  Serial.println(" milli Gs");
+#endif
 }
