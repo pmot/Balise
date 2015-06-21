@@ -22,4 +22,9 @@ Accelerometre
 =============
 La communication s'effectue via I2C.
 
+Console 
+=======
+Pin 11 : Tx carte
+Pin 12 : Rx carte
+
 
