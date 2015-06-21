@@ -58,11 +58,13 @@ void loop() {
   while(1)
   {
     // Acquisition GPS
+    gpsSerial.listen();
 	gpsRead(gps, gpsSerial, 1000);
 	gps.f_get_position(&flat, &flon, &age);
 	speed = gps.f_speed_kmph();
 	
 	// Scan WIFI
+	wifiSerial.listen();
 	nbAP = wifiScanAp(&apList, wifly);
 
 #ifdef DEBUG_TO_CONSOLE
