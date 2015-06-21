@@ -6,9 +6,10 @@
 #include <LIS331.h>
 #include <Wire.h>
 
-#include "parameters.h"
+#include "core_parameters.h"
 #include "wifi_scan_ap.h"
 #include "gps.h"
+#include "accelerometer.h"
 
 // Accel
 LIS331 lis;
@@ -39,14 +40,8 @@ void setup() {
   wifly.reset();
 
   // Accéléromètre
-  lis.setPowerStatus(LR_POWER_NORM);
-  lis.setYEnable(true);
-  // Registres
-  lis.writeReg(0x30, 0x08);
-  lis.writeReg(0x32, 0x01);
-  lis.writeReg(0x33, 0x06);
-  // Interruption
-  attachInterrupt(0, movment, CHANGE);
+  accelerometerSetup(lis);
+  attachInterrupt(0, movment, RISING);
   
   // extinction de la LED à la fin de l'initialisation
   // on pourrait la faire clignoter en cas d'erreur durant cette phase
