@@ -9,7 +9,7 @@ ARDUINO_LIBS = Wire SoftwareSerial TinyGPS-13 LIS331/src WiFi_Shield-master \
 OBJDIR = ${HOME}/BaliseBuild
 BOARD_TAG = pro.menu.cpu.16MHzatmega328
 ARDUINO_PORT = /dev/ttyUSB*
-AVRDUDE_OPTS = -q  # -DDEBUG_TO_CONSOLE
+AVRDUDE_OPTS = -q
 ISP_PROG = avrispmkII
 ISP_PORT = usb
 include ../../build/arduino/Arduino.mk
