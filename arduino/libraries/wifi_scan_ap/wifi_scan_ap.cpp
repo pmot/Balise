@@ -1,7 +1,7 @@
 // Code qui permet de lister les AP visibles
 #include "wifi_scan_ap.h"
 
-struct apEntry* wifiScanAp(WiFly myWiFly)
+int wifiScanAp(struct apEntry** ptAP, WiFly myWiFly)
 {
   // un scan wifi via le RN 171 met environ 2500ms par défaut:
   // - 200ms par canal
@@ -14,7 +14,6 @@ struct apEntry* wifiScanAp(WiFly myWiFly)
   char* newLine = NULL;
   char* p = NULL;
   unsigned long end_millis;
-  struct apEntry* apList;
   
   // Scan, nouveau mode nécessite un firmware >= 2.22
   if (myWiFly.version() < 2.22) return 0;
@@ -33,20 +32,22 @@ struct apEntry* wifiScanAp(WiFly myWiFly)
 		{
 			if (strstr(newLine, "SCAN:"))
 			{
+				wifiScanBegin = true;
 				// Le nombre d'AP visibles vient après le ':'
-				p = strtok(newLine, ":");
-				nbScanned = atoi(++p);
+				p = strtok(newLine, " ");
+				p = strtok(NULL, " ");
+				nbScanned = atoi(p);
 				if (nbScanned == 0) wifiScanEnd = true;
 				// else Allouer l'escpace nécessaire
 				else
 				{
-					apList = (struct apEntry*)malloc(nbScanned*sizeof(struct apEntry));
+					*ptAP = (struct apEntry*)malloc(nbScanned*sizeof(struct apEntry));
 				}
 			}
 		}
 		else
 		{
-			if (strstr(newLine, "END\r")) wifiScanEnd = true;
+			if (strstr(newLine, "END:")) wifiScanEnd = true;
 			else
 			{
 				// Nouvelle entrée apEntry à logger dans la liste apList
@@ -57,14 +58,16 @@ struct apEntry* wifiScanAp(WiFly myWiFly)
 				p = strtok(newLine, ",");
 				p = strtok(NULL, ",");
 				p = strtok(NULL, ",");
-				apList[nbAdded].rssi = atoi(p);
+				if (p) (*ptAP)[nbAdded].rssi = atoi(p);
 				p = strtok(NULL, ",");
 				p = strtok(NULL, ",");
 				p = strtok(NULL, ",");
-				strncpy(apList[nbAdded].mac, p, strlen(p));
 				p = strtok(NULL, ",");
-				strncpy(apList[nbAdded].ssid, p, strlen(p));
-				nbAdded++;
+				p = strtok(NULL, ",");
+				if (p) strncpy((*ptAP)[nbAdded].mac, p, strlen(p));
+				p = strtok(NULL, ",");
+				if (p) strncpy((*ptAP)[nbAdded].ssid, p, strlen(p));
+				if (p) nbAdded++;
 			}
 		}
 		free(newLine); 
@@ -75,8 +78,8 @@ struct apEntry* wifiScanAp(WiFly myWiFly)
   {
 	  // Mismatch, or truncated
   }
-  // Retourne un tableau de struct apEntry... Le format JSON est pour toi
-  return apList;
+
+  return nbAdded;
 }
 
 char* wifiScanReadLn(WiFly myWiFly)

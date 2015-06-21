@@ -9,6 +9,7 @@
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
 struct apEntry* apList;
+int nbAP = 0;
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -22,5 +23,11 @@ void loop() {
   delay(1000);              // wait for a second
   digitalWrite(13, LOW);    // turn the LED off by making the voltage LOW
   delay(1000);              // wait for a second
-  apList = wifiScanAp(wifly);
+  nbAP = wifiScanAp(&apList, wifly);
+  // if (nbAP > 0)
+  // {
+  // Premier SSID : apList[0].ssid (une chaine)
+  // - RSSI : apList[0].rssi (c'est un int...)
+  // - MAC : apList[0].mac (une chaine)
+  // }
 }
