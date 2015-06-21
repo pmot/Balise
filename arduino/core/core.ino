@@ -5,6 +5,7 @@
 
 #include "parameters.h"
 #include "wifi_scan_ap.h"
+#include "gps.h"
 
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
@@ -15,19 +16,27 @@ int nbAP = 0;
 void setup() {
   // initialize digital pin 13 as an output.
   pinMode(13, OUTPUT);
+  // allumage de la LED le temps de l'initialisation
+  digitalWrite(13, HIGH);
+  
+  
+  // extinction de la LED à la fin de l'initialisation
+  // on pourrait la faire clignoter en cas d'erreur durant cette phase
+  digitalWrite(13, LOW);
 }
 
 // the loop function runs over and over again forever
 void loop() {
-  digitalWrite(13, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(1000);              // wait for a second
-  digitalWrite(13, LOW);    // turn the LED off by making the voltage LOW
-  delay(1000);              // wait for a second
-  nbAP = wifiScanAp(&apList, wifly);
-  // if (nbAP > 0)
-  // {
-  // Premier SSID : apList[0].ssid (une chaine)
-  // - RSSI : apList[0].rssi (c'est un int...)
-  // - MAC : apList[0].mac (une chaine)
-  // }
+  while(1)
+  {
+	nbAP = wifiScanAp(&apList, wifly);
+#ifdef DEBUG_TO_CONSOLE
+	// if (nbAP > 0)
+	// {
+	// Premier SSID : apList[0].ssid (une chaine)
+	// - RSSI : apList[0].rssi (c'est un int...)
+	// - MAC : apList[0].mac (une chaine)
+	// }
+#endif
+  }
 }
