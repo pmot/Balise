@@ -10,6 +10,7 @@
 #include "wifi_scan_ap.h"
 #include "gps.h"
 #include "accelerometer.h"
+#include "cellular.h"
 
 // Accel
 LIS331 lis;
