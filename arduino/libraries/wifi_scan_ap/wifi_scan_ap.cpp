@@ -54,12 +54,16 @@ struct apEntry* wifiScanAp(WiFly myWiFly)
 				// RSSI : champ 3
 				// MAC : champ 6
 				// SSID : champ 7
-				// TODO
-				// p = strtok(newLine, ",");
-				// Test... je ne connais pas le compilo
-				apList[nbAdded].rssi = nbAdded; // atoi(...);
-				apList[nbAdded].mac = "xx.xx.xx.xx.xx.xx.xx";
-				aplist[nbAdded].ssid = "dummy";
+				p = strtok(newLine, ",");
+				p = strtok(NULL, ",");
+				p = strtok(NULL, ",");
+				apList[nbAdded].rssi = atoi(p);
+				p = strtok(NULL, ",");
+				p = strtok(NULL, ",");
+				p = strtok(NULL, ",");
+				strncpy(apList[nbAdded].mac, p, strlen(p));
+				p = strtok(NULL, ",");
+				strncpy(apList[nbAdded].ssid, p, strlen(p));
 				nbAdded++;
 			}
 		}
