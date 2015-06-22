@@ -1,4 +1,7 @@
 // Core program
+
+#define DEBUG_TO_CONSOLE
+
 #include <Arduino.h>
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
@@ -71,18 +74,36 @@ void loop() {
 	gpsRead(gps, gpsSerial, 1000);
 	gps.f_get_position(&flat, &flon, &age);
 	speed = gps.f_speed_kmph();
-	
+#ifdef DEBUG_TO_CONSOLE
+	consoleSerial.println(flat);
+	consoleSerial.println(flon);
+	consoleSerial.println(speed);
+#endif
 	// Scan WIFI
 	wifiSerial.listen();
 	nbAP = wifiScanAp(&apList, wifly);
 
-	// if (nbAP > 0)
-	// {
-	// Premier SSID : apList[0].ssid (une chaine)
-	// - RSSI : apList[0].rssi (c'est un int...)
-	// - MAC : apList[0].mac (une chaine)
-	// }
+#ifdef DEBUG_TO_CONSOLE
+	if (nbAP > 0)
+	{
+		// - SSID : apList[0].ssid (une chaine)
+		// - RSSI : apList[0].rssi (c'est un int...)
+		// - MAC : apList[0].mac (une chaine)
+		consoleSerial.print("WIFI - AP trouvées : ");
+		consoleSerial.println(nbAP);
+		for (int ap=0; ap < nbAP; ap++)
+		{
+			consoleSerial.print("WIFI - SSID : ");
+			consoleSerial.println(apList[ap].ssid);
+			consoleSerial.print("WIFI - MAC : ");
+			consoleSerial.println(apList[ap].mac);
+			consoleSerial.print("WIFI - RSSI : ");
+			consoleSerial.println(apList[ap].rssi);	
+		}
+	}
+	else consoleSerial.println("WIFI - Aucune AP trouvée");
   }
+#endif
 }
 
 void movment()
@@ -91,8 +112,9 @@ void movment()
   int16_t y;
   lis.getYValue(&y);
   cli();
-
-  Serial.print("Y Value: ");
-  Serial.print(y);
-  Serial.println(" milli Gs");
+#ifdef DEBUG_TO_CONSOLE
+  consoleSerial.print("ACCEL - Axe Y : ");
+  consoleSerial.print(y);
+  consoleSerial.println(" milli Gs");
+#endif
 }
