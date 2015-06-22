@@ -6,9 +6,11 @@
 
 #include "core_parameters.h"
 
+// GPS
 #include "gps.h"
 #include "cellular.h"
 
+// WIFI
 #include <WiFly.h>
 #include "wifi_scan_ap.h"
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
@@ -16,9 +18,13 @@ WiFly wifly(&wifiSerial);
 struct apEntry* apList;
 int nbAP = 0;
 
+// ACCEL
 #include <LIS331.h>
 #include "accelerometer.h"
 LIS331 lis;
+
+// Console
+SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
 
 // GPS
 SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
@@ -32,6 +38,8 @@ void setup() {
   digitalWrite(13, HIGH);
   
   // Initialisation des lignes serial, i2c
+  consoleSerial.begin(9600);
+  consoleSerial.println("INIT : Begin");
   gpsSerial.begin(9600);
   Wire.begin();
 
@@ -47,6 +55,7 @@ void setup() {
   // on pourrait la faire clignoter en cas d'erreur durant cette phase
   digitalWrite(13, LOW);
   delay(3000);
+  consoleSerial.println("INIT : Done");
 }
 
 // the loop function runs over and over again forever

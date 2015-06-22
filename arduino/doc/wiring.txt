@@ -1,5 +1,9 @@
 Ce document décrit la connexion au MCU Arduino Pro
 
+Cellulaire
+==========
+La communication s'effectue par le port UART 1.
+
 WiFi
 ====
 La communication s'effectue via SoftwareSerial.
@@ -7,7 +11,7 @@ La communication s'effectue via SoftwareSerial.
 Arduino Pro
 RX: Pin TX
 TX: Pin RX
-Initialisation: SoftwareSerial AccelSerial(RX, TX);
+Initialisation: SoftwareSerial wifiSerial(RX, TX);
 
 GPS
 ===
@@ -16,7 +20,7 @@ La communication s'effectue via SoftwareSerial.
 Arduino Pro
 RX: Pin 7
 TX: Pin 6
-Initialisation: SoftwareSerial GpsSerial(7, 6);
+Initialisation: SoftwareSerial gpsSerial(7, 6);
 
 Accelerometre
 =============
@@ -24,7 +28,11 @@ La communication s'effectue via I2C.
 
 Console 
 =======
+La communication s'effectue via SoftwareSerial.
+
 Pin 11 : Tx carte
 Pin 12 : Rx carte
+Initialisation: SoftwareSerial consoleSerial(12, 11)
+
 
 
