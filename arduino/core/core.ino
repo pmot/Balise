@@ -1,25 +1,24 @@
 // Core program
 #include <Arduino.h>
 #include <SoftwareSerial.h>
-#include <WiFly.h>
 #include <TinyGPS.h>
-#include <LIS331.h>
 #include <Wire.h>
 
 #include "core_parameters.h"
-#include "wifi_scan_ap.h"
+
 #include "gps.h"
-#include "accelerometer.h"
 #include "cellular.h"
 
-// Accel
-LIS331 lis;
-
-// Wifi
+#include <WiFly.h>
+#include "wifi_scan_ap.h"
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
 struct apEntry* apList;
 int nbAP = 0;
+
+#include <LIS331.h>
+#include "accelerometer.h"
+LIS331 lis;
 
 // GPS
 SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
@@ -33,17 +32,17 @@ void setup() {
   digitalWrite(13, HIGH);
   
   // Initialisation des lignes serial, i2c
-  wifiSerial.begin(9600);
   gpsSerial.begin(9600);
   Wire.begin();
-  
+
   // Initialisation du Wifi
+  wifiSerial.begin(9600);
   wifly.reset();
 
   // Accéléromètre
   accelerometerSetup(lis);
   attachInterrupt(0, movment, RISING);
-  
+
   // extinction de la LED à la fin de l'initialisation
   // on pourrait la faire clignoter en cas d'erreur durant cette phase
   digitalWrite(13, LOW);
@@ -68,15 +67,12 @@ void loop() {
 	wifiSerial.listen();
 	nbAP = wifiScanAp(&apList, wifly);
 
-#ifdef DEBUG_TO_CONSOLE
 	// if (nbAP > 0)
 	// {
 	// Premier SSID : apList[0].ssid (une chaine)
 	// - RSSI : apList[0].rssi (c'est un int...)
 	// - MAC : apList[0].mac (une chaine)
 	// }
-#endif
-
   }
 }
 
@@ -86,9 +82,8 @@ void movment()
   int16_t y;
   lis.getYValue(&y);
   cli();
-#ifdef DEBUG_TO_CONSOLE
+
   Serial.print("Y Value: ");
   Serial.print(y);
   Serial.println(" milli Gs");
-#endif
 }
