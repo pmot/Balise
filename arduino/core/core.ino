@@ -61,11 +61,11 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-  struct apEntry* apList;				// Liste des AP
-  int nbAP = 0;							// Nombre d'AP
-  unsigned long nextWifiScanMillis;		// timestamp du prochain scan
-  unsigned long nextWifiScanGetResultMillis;			// timestamp de la lecture du scan en cours
-  unsigned long nextGPSReadMillis;		// timestamp de la prochaine lecture des coordonnées GPS
+  struct apEntry* apList;	// Liste des AP WIFI
+  int nbAP = 0;				// Nombre d'AP WIFI
+  unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
+  unsigned long nextWifiScanRes;	// timestamp de la lecture du scan WIFI en cours
+  unsigned long nextGPSRead;		// timestamp de la prochaine lecture des coordonnées GPS
 
   int16_t y;	// Accélération en mg selon l'axe y
   
@@ -73,9 +73,9 @@ void loop() {
   unsigned long age;
   
   wifiScanSetup(wifly);
-  nextWifiScanMillis = millis();
-  nextWifiScanGetResultMillis = 0;
-  nextGPSReadMillis = millis();
+  nextWifiScan = millis();
+  nextWifiScanRes = 0;
+  nextGPSRead = millis();
   
   while(1)
   {
@@ -89,9 +89,9 @@ void loop() {
 #endif
 
 	// Acquisition GPS
-	if (millis() >= nextGPSReadMillis)
+	if (itsTimeFor(nextGPSRead))
 	{
-      nextGPSReadMillis = millis() + GPS_READ_DELAY;
+      nextGPSRead = millis() + GPS_READ_DELAY;
       gpsSerial.listen();
       gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pend GPS_TIME ms
       gps.f_get_position(&flat, &flon, &age);
@@ -103,22 +103,22 @@ void loop() {
 #endif
 	}
 	
-	// Scan WIFI et on rend la main
-	if ((nextWifiScanGetResultMillis == 0) && (millis() >= nextWifiScanMillis))
+	// On n'attend pas de résultat de Scan WIFI, on lance et on rend la main
+	if ((nextWifiScanRes == 0) && itsTimeFor(nextWifiScan))
 	{
-	  nextWifiScanMillis = millis() + WIFI_SCAN_DELAY;
+	  nextWifiScan = millis() + WIFI_SCAN_DELAY;
 	  if (wifiScanAp(wifly))
 	  {
-		nextWifiScanGetResultMillis = millis() + WIFI_SCAN_TIME;
+		nextWifiScanRes = millis() + WIFI_SCAN_TIME;
 	  }
-	  else nextWifiScanGetResultMillis = 0;
+	  else nextWifiScanRes = 0;
 	}
 	// Scan WIFI on reprend la main pour la lecture du résultat
 	else
 	{
-	  if (millis() >= nextWifiScanMillis)
+	  if (itsTimeFor(nextWifiScanRes))
 	  {
-	    nextWifiScanGetResultMillis = 0;
+	    nextWifiScanRes = 0;
 	    wifiSerial.listen();
 	    nbAP = wifiScanApGetResult(&apList, wifly); // Le scan prend 3s par défaut
 #ifdef DEBUG_TO_CONSOLE
@@ -155,4 +155,9 @@ void movment()
   consoleSerial.print(y);
   consoleSerial.println(" milli Gs");
 #endif
+}
+
+bool itsTimeFor(unsigned long ts)
+{
+	return (millis() >= ts);
 }
