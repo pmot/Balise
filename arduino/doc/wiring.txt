@@ -34,5 +34,20 @@ Pin 11 : Tx carte
 Pin 12 : Rx carte
 Initialisation: SoftwareSerial consoleSerial(12, 11)
 
+Connecteur externe
+===================
+1 - Tx Console
+2 - Rx Console
+3 - Tx upgrade
+4 - Rx upgrade
+5 - Bat +
+6 - Masse
+7 - 3,3 v (sortie)
+
+/!\ Les Tx et Rx sont vus coté arduino
+
+Information sur les cable USB TTL 5V : http://info.ebconnections.com/
+
+
 
 
