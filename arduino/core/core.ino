@@ -103,19 +103,24 @@ void loop() {
 #endif
 	}
 	
-	// On n'attend pas de résultat de Scan WIFI, on lance et on rend la main
+	// On n'attend pas de résultat de Scan WIFI, on lance le scan et on rend la main
+	// sans attendre le résultat
 	if ((nextWifiScanRes == 0) && itsTimeFor(nextWifiScan))
 	{
+	  // Programmation du prochain scan
 	  nextWifiScan = millis() + WIFI_SCAN_DELAY;
+      // Scan !
 	  if (wifiScanAp(wifly))
 	  {
+	  	// Si la commande scan réussi, programmation de la lecture du résultat
+	    // au bout WIFI_SCAN_TIME ms
 		nextWifiScanRes = millis() + WIFI_SCAN_TIME;
 	  }
+	  // Si la commande échoue, pas de programmation de la lecture du résultat
 	  else nextWifiScanRes = 0;
 	}
-	// Scan WIFI on reprend la main pour la lecture du résultat
 	else
-	{
+	{ // Sinon lecture du résultat
 	  if (itsTimeFor(nextWifiScanRes))
 	  {
 	    nextWifiScanRes = 0;
@@ -138,8 +143,14 @@ void loop() {
 	    }
 	    else consoleSerial.println("WIFI - Aucune AP trouvée");
 #endif
+        if ((nbAP > 0) && apList)
+        {
+			// Traitement de la sortie
+			// TODO TODO
+			// Libération mémoire
+			free(apList);
+		}
       }
-	  if ((nbAP > 0) && apList) free(apList);
 	}
   }
 }
