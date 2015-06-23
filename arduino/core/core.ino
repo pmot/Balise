@@ -18,8 +18,6 @@
 #include "wifi_scan_ap.h"
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
-struct apEntry* apList;
-int nbAP = 0;
 
 // ACCEL
 #include <LIS331.h>
@@ -63,47 +61,70 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
+  struct apEntry* apList;				// Liste des AP
+  int nbAP = 0;							// Nombre d'AP
+  unsigned long nextWifiScanMillis;		// timestamp du prochain scan
+  unsigned long nextGPSReadMillis;		// timestamp de la prochaine lecture des coordonnées GPS
 
+  int16_t y;	// Accélération en mg selon l'axe y
+  
   float flat, flon, speed;
   unsigned long age;
   
+  nextWifiScanMillis = millis();
+  nextGPSReadMillis = millis();
   while(1)
   {
-    // Acquisition GPS
-    gpsSerial.listen();
-	gpsRead(gps, gpsSerial, 1000);
-	gps.f_get_position(&flat, &flon, &age);
-	speed = gps.f_speed_kmph();
-#ifdef DEBUG_TO_CONSOLE
-	consoleSerial.println(flat);
-	consoleSerial.println(flon);
-	consoleSerial.println(speed);
-#endif
-	// Scan WIFI
-	wifiSerial.listen();
-	nbAP = wifiScanAp(&apList, wifly);
 
+    // La lecture de l'accéléromètre est prioritaire
+    lis.getYValue(&y);
 #ifdef DEBUG_TO_CONSOLE
-	if (nbAP > 0)
+    consoleSerial.print("ACCEL - Axe Y : ");
+    consoleSerial.print(y);
+    consoleSerial.println(" milli Gs");
+#endif
+
+	// Acquisition GPS
+	if (millis() >= nextGPSReadMillis)
 	{
-		// - SSID : apList[0].ssid (une chaine)
-		// - RSSI : apList[0].rssi (c'est un int...)
-		// - MAC : apList[0].mac (une chaine)
+      nextGPSReadMillis = millis() + GPS_READ_DELAY;
+      gpsSerial.listen();
+      gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pend GPS_TIME ms
+      gps.f_get_position(&flat, &flon, &age);
+      speed = gps.f_speed_kmph();
+#ifdef DEBUG_TO_CONSOLE
+	  consoleSerial.println(flat);
+	  consoleSerial.println(flon);
+	  consoleSerial.println(speed);
+#endif
+	}
+	
+	// Scan WIFI
+	if (millis() >= nextWifiScanMillis)
+	{
+	  nextWifiScanMillis = millis() + WIFI_SCAN_DELAY;
+	  wifiSerial.listen();
+	  nbAP = wifiScanAp(&apList, wifly); // Le scan prend 3s par défaut
+#ifdef DEBUG_TO_CONSOLE
+	  if (nbAP > 0)
+	  {
 		consoleSerial.print("WIFI - AP trouvées : ");
 		consoleSerial.println(nbAP);
 		for (int ap=0; ap < nbAP; ap++)
 		{
-			consoleSerial.print("WIFI - SSID : ");
-			consoleSerial.println(apList[ap].ssid);
-			consoleSerial.print("WIFI - MAC : ");
-			consoleSerial.println(apList[ap].mac);
-			consoleSerial.print("WIFI - RSSI : ");
-			consoleSerial.println(apList[ap].rssi);	
-		}
-	}
-	else consoleSerial.println("WIFI - Aucune AP trouvée");
-  }
+		  consoleSerial.print("WIFI - SSID : ");
+		  consoleSerial.println(apList[ap].ssid);
+		  consoleSerial.print("WIFI - MAC : ");
+		  consoleSerial.println(apList[ap].mac);
+		  consoleSerial.print("WIFI - RSSI : ");
+		  consoleSerial.println(apList[ap].rssi);	
+	    }
+	  }
+	  else consoleSerial.println("WIFI - Aucune AP trouvée");
+    }
 #endif
+	if ((nbAP > 0) && apList) free(apList);
+  }
 }
 
 void movment()
@@ -113,7 +134,7 @@ void movment()
   lis.getYValue(&y);
   cli();
 #ifdef DEBUG_TO_CONSOLE
-  consoleSerial.print("ACCEL - Axe Y : ");
+  consoleSerial.print("ACCEL (INTR) - Axe Y : ");
   consoleSerial.print(y);
   consoleSerial.println(" milli Gs");
 #endif
