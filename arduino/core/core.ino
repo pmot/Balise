@@ -64,6 +64,7 @@ void loop() {
   struct apEntry* apList;				// Liste des AP
   int nbAP = 0;							// Nombre d'AP
   unsigned long nextWifiScanMillis;		// timestamp du prochain scan
+  unsigned long nextWifiScanGetResultMillis;			// timestamp de la lecture du scan en cours
   unsigned long nextGPSReadMillis;		// timestamp de la prochaine lecture des coordonnées GPS
 
   int16_t y;	// Accélération en mg selon l'axe y
@@ -71,8 +72,11 @@ void loop() {
   float flat, flon, speed;
   unsigned long age;
   
+  wifiScanSetup(wifly);
   nextWifiScanMillis = millis();
+  nextWifiScanGetResultMillis = 0;
   nextGPSReadMillis = millis();
+  
   while(1)
   {
 
@@ -99,31 +103,44 @@ void loop() {
 #endif
 	}
 	
-	// Scan WIFI
-	if (millis() >= nextWifiScanMillis)
+	// Scan WIFI et on rend la main
+	if ((nextWifiScanGetResultMillis == 0) && (millis() >= nextWifiScanMillis))
 	{
 	  nextWifiScanMillis = millis() + WIFI_SCAN_DELAY;
-	  wifiSerial.listen();
-	  nbAP = wifiScanAp(&apList, wifly); // Le scan prend 3s par défaut
-#ifdef DEBUG_TO_CONSOLE
-	  if (nbAP > 0)
+	  if (wifiScanAp(wifly))
 	  {
-		consoleSerial.print("WIFI - AP trouvées : ");
-		consoleSerial.println(nbAP);
-		for (int ap=0; ap < nbAP; ap++)
-		{
-		  consoleSerial.print("WIFI - SSID : ");
-		  consoleSerial.println(apList[ap].ssid);
-		  consoleSerial.print("WIFI - MAC : ");
-		  consoleSerial.println(apList[ap].mac);
-		  consoleSerial.print("WIFI - RSSI : ");
-		  consoleSerial.println(apList[ap].rssi);	
-	    }
+		nextWifiScanGetResultMillis = millis() + WIFI_SCAN_TIME;
 	  }
-	  else consoleSerial.println("WIFI - Aucune AP trouvée");
-    }
+	  else nextWifiScanGetResultMillis = 0;
+	}
+	// Scan WIFI on reprend la main pour la lecture du résultat
+	else
+	{
+	  if (millis() >= nextWifiScanMillis)
+	  {
+	    nextWifiScanGetResultMillis = 0;
+	    wifiSerial.listen();
+	    nbAP = wifiScanApGetResult(&apList, wifly); // Le scan prend 3s par défaut
+#ifdef DEBUG_TO_CONSOLE
+	    if (nbAP > 0)
+	    {
+		  consoleSerial.print("WIFI - AP trouvées : ");
+		  consoleSerial.println(nbAP);
+		  for (int ap=0; ap < nbAP; ap++)
+		  {
+		    consoleSerial.print("WIFI - SSID : ");
+		    consoleSerial.println(apList[ap].ssid);
+		    consoleSerial.print("WIFI - MAC : ");
+		    consoleSerial.println(apList[ap].mac);
+		    consoleSerial.print("WIFI - RSSI : ");
+		    consoleSerial.println(apList[ap].rssi);	
+	      }
+	    }
+	    else consoleSerial.println("WIFI - Aucune AP trouvée");
 #endif
-	if ((nbAP > 0) && apList) free(apList);
+      }
+	  if ((nbAP > 0) && apList) free(apList);
+	}
   }
 }
 

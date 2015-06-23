@@ -1,7 +1,24 @@
 // Code qui permet de lister les AP visibles
 #include "wifi_scan_ap.h"
 
-int wifiScanAp(struct apEntry** ptAP, WiFly myWiFly)
+int wifiScanSetup(WiFly myWiFly)
+{
+  // Scan, nouveau mode nécessite un firmware >= 2.22
+  if (myWiFly.version() < 2.22) return 0;
+  if (!myWiFly.sendCommand("set sys printlvl 0x4000\r")) return 0;
+  else return 1;  
+}
+
+int wifiScanAp(WiFly myWiFly)
+{
+  // un scan wifi via le RN 171 met environ 2500ms par défaut:
+  // - 200ms par canal
+  // - 13 canaux  
+  if (!myWiFly.sendCommand("scan\r")) return 0;
+  else return 1;
+}
+
+int wifiScanApGetResult(struct apEntry** ptAP, WiFly myWiFly)
 {
   // un scan wifi via le RN 171 met environ 2500ms par défaut:
   // - 200ms par canal
@@ -15,14 +32,6 @@ int wifiScanAp(struct apEntry** ptAP, WiFly myWiFly)
   char* p = NULL;
   unsigned long end_millis;
   
-  // Scan, nouveau mode nécessite un firmware >= 2.22
-  if (myWiFly.version() < 2.22) return 0;
-  if (!myWiFly.sendCommand("set sys printlvl 0x4000\r")) return 0;
-  if (!myWiFly.sendCommand("scan\r")) return 0;
-
-  // On attend la fin du scan, environ 3s
-  delay(2500);
-
   // Analyse de la sortie, 500ms max !
   end_millis = millis() + 500;
   while ((!wifiScanEnd) && (millis() < end_millis)) {

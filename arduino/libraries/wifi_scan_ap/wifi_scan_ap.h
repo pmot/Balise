@@ -4,7 +4,9 @@
 #include <Arduino.h>
 #include <WiFly.h>
 
-int wifiScanAp(struct apEntry**, WiFly);
+int wifiScanSetup(WiFly);
+int wifiScanAp(WiFly);
+int wifiScanApGetResult(struct apEntry**, WiFly);
 char* wifiScanReadLn(WiFly);
 
 struct apEntry

@@ -13,6 +13,8 @@
 #define GPS_READ_TIME	1000
 // Délai entre deux lectures de position GPS en ms
 #define GPS_READ_DELAY	5000
+// Délais d'attente de lecture du résultat du SCAN Wifi en ms (environ 3s)
+#define WIFI_SCAN_TIME	2500
 // Délais entre deux scan d'AP WIFI en ms
 #define WIFI_SCAN_DELAY	10000
 
@@ -20,3 +22,4 @@
 void movment();
 
 #endif
+ 
