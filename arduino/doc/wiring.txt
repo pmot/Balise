@@ -26,6 +26,10 @@ Accelerometre
 =============
 La communication s'effectue via I2C.
 
+LED 
+===
+pin 13
+
 Console 
 =======
 La communication s'effectue via SoftwareSerial.
@@ -42,7 +46,8 @@ Connecteur externe
 4 - Rx upgrade
 5 - Bat +
 6 - Masse
-7 - 3,3 v (sortie)
+7 - 3,3 v (sortie venant de la carte ) ... je sais pas pourquoi ....
+8 - RTS
 
 /!\ Les Tx et Rx sont vus coté arduino
 
