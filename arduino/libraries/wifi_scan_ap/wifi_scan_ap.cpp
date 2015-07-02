@@ -74,8 +74,10 @@ int wifiScanApGetResult(struct apEntry** ptAP, WiFly myWiFly)
 				p = strtok(NULL, ",");
 				p = strtok(NULL, ",");
 				if (p) strncpy((*ptAP)[nbAdded].mac, p, strlen(p));
+				(*ptAP)[nbAdded].mac[strlen(p)]='\0';
 				p = strtok(NULL, ",");
 				if (p) strncpy((*ptAP)[nbAdded].ssid, p, strlen(p));
+				(*ptAP)[nbAdded].ssid[strlen(p)]='\0';
 				if (p) nbAdded++;
 			}
 		}
@@ -97,7 +99,7 @@ char* wifiScanReadLn(WiFly myWiFly)
 	char c=' ';
 	int i=0;
 	// Taille max d'une ligne = 100 cars (évite les realloc())
-	char tabCar[101] = "";
+	char tabCar[101];
 	char* newLine = NULL;
 
 	while (!endOfLine)
@@ -113,7 +115,7 @@ char* wifiScanReadLn(WiFly myWiFly)
 	if (i>0)
 	{
 	  tabCar[i++] = '\0';
-	  newLine = (char*)malloc(i);
+	  newLine = (char*)malloc(i+1);
 	  strncpy(newLine, tabCar, i);
 	  // Ceinture/bretelle/nul en C !
 	  newLine[i] = '\0';
