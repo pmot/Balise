@@ -73,11 +73,15 @@ int wifiScanApGetResult(struct apEntry** ptAP, WiFly myWiFly)
 				p = strtok(NULL, ",");
 				p = strtok(NULL, ",");
 				p = strtok(NULL, ",");
-				if (p) strncpy((*ptAP)[nbAdded].mac, p, strlen(p));
-				(*ptAP)[nbAdded].mac[strlen(p)]='\0';
+				if (p) {
+					strncpy((*ptAP)[nbAdded].mac, p, strlen(p));
+					(*ptAP)[nbAdded].mac[strlen(p)]='\0';
+				}
 				p = strtok(NULL, ",");
-				if (p) strncpy((*ptAP)[nbAdded].ssid, p, strlen(p));
-				(*ptAP)[nbAdded].ssid[strlen(p)]='\0';
+				if (p) { 
+					strncpy((*ptAP)[nbAdded].ssid, p, strlen(p));
+					(*ptAP)[nbAdded].ssid[strlen(p)]='\0';
+				}
 				if (p) nbAdded++;
 			}
 		}
