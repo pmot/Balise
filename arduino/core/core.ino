@@ -149,6 +149,7 @@ void loop() {
 			// TODO TODO
 			// Libération mémoire
 			free(apList);
+			apList=NULL;
 		}
       }
 	}
