@@ -3,6 +3,7 @@
 #define DEBUG_TO_CONSOLE
 
 #include <Arduino.h>
+#include <stdlib.h>
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
 #include <Wire.h>
@@ -18,6 +19,7 @@
 #include "wifi_scan_ap.h"
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
+bool wifiScanEnabled = true;
 
 // ACCEL
 #include <LIS331.h>
@@ -56,6 +58,14 @@ void setup() {
   // on pourrait la faire clignoter en cas d'erreur durant cette phase
   digitalWrite(13, LOW);
   delay(3000);
+  
+  // setup wifiScan
+  if (wifiScanSetup(wifly))
+	consoleSerial.println("WIFI SCAN SETUP : OK");
+  else {
+	consoleSerial.println("WIFI SCAN SETUP : NOT OK");
+	wifiScanEnabled = false;
+  }
   consoleSerial.println("INIT : Done");
 }
 
@@ -72,7 +82,6 @@ void loop() {
   float flat, flon, speed;
   unsigned long age;
   
-  wifiScanSetup(wifly);
   nextWifiScan = millis();
   nextWifiScanRes = 0;
   nextGPSRead = millis();
@@ -101,58 +110,62 @@ void loop() {
 	  consoleSerial.println(flon);
 	  consoleSerial.println(speed);
 #endif
+	  
 	}
 	
-	// On n'attend pas de résultat de Scan WIFI, on lance le scan et on rend la main
-	// sans attendre le résultat
-	if ((nextWifiScanRes == 0) && itsTimeFor(nextWifiScan))
+	if (wifiScanEnabled)
 	{
-	  // Programmation du prochain scan
-	  nextWifiScan = millis() + WIFI_SCAN_DELAY;
-      // Scan !
-	  if (wifiScanAp(wifly))
-	  {
-	  	// Si la commande scan réussi, programmation de la lecture du résultat
-	    // au bout WIFI_SCAN_TIME ms
-		nextWifiScanRes = millis() + WIFI_SCAN_TIME;
-	  }
-	  // Si la commande échoue, pas de programmation de la lecture du résultat
-	  else nextWifiScanRes = 0;
-	}
-	else
-	{ // Sinon lecture du résultat
-	  if (itsTimeFor(nextWifiScanRes))
-	  {
-	    nextWifiScanRes = 0;
-	    wifiSerial.listen();
-	    nbAP = wifiScanApGetResult(&apList, wifly); // Le scan prend 3s par défaut
-#ifdef DEBUG_TO_CONSOLE
-	    if (nbAP > 0)
-	    {
-		  consoleSerial.print("WIFI - AP trouvées : ");
-		  consoleSerial.println(nbAP);
-		  for (int ap=0; ap < nbAP; ap++)
+		// On n'attend pas de résultat de Scan WIFI, on lance le scan et on rend la main
+		// sans attendre le résultat
+		if ((nextWifiScanRes == 0) && itsTimeFor(nextWifiScan))
+		{
+		  // Programmation du prochain scan
+		  nextWifiScan = millis() + WIFI_SCAN_DELAY;
+	      // Scan !
+		  if (wifiScanAp(wifly))
 		  {
-		    consoleSerial.print("WIFI - SSID : ");
-		    consoleSerial.println(apList[ap].ssid);
-		    consoleSerial.print("WIFI - MAC : ");
-		    consoleSerial.println(apList[ap].mac);
-		    consoleSerial.print("WIFI - RSSI : ");
-		    consoleSerial.println(apList[ap].rssi);	
-	      }
-	    }
-	    else consoleSerial.println("WIFI - Aucune AP trouvée");
-#endif
-        if ((nbAP > 0) && apList)
-        {
-			// Traitement de la sortie
-			// TODO TODO
-			// Libération mémoire
-			free(apList);
-			apList=NULL;
+		  	// Si la commande scan réussi, programmation de la lecture du résultat
+		    // au bout WIFI_SCAN_TIME ms
+			nextWifiScanRes = millis() + WIFI_SCAN_TIME;
+		  }
+		  // Si la commande échoue, pas de programmation de la lecture du résultat
+		  else nextWifiScanRes = 0;
 		}
-      }
-	}
+		else
+		{ // Sinon lecture du résultat
+		  if (itsTimeFor(nextWifiScanRes))
+		  {
+		    nextWifiScanRes = 0;
+		    wifiSerial.listen();
+		    nbAP = wifiScanApGetResult(&apList, wifly); // Le scan prend 3s par défaut
+#ifdef DEBUG_TO_CONSOLE
+		    if (nbAP > 0)
+		    {
+			  consoleSerial.print("WIFI - AP trouvées : ");
+			  consoleSerial.println(nbAP);
+			  for (int ap=0; ap < nbAP; ap++)
+			  {
+			    consoleSerial.print("WIFI - SSID : ");
+			    consoleSerial.println(apList[ap].ssid);
+			    consoleSerial.print("WIFI - MAC : ");
+			    consoleSerial.println(apList[ap].mac);
+			    consoleSerial.print("WIFI - RSSI : ");
+			    consoleSerial.println(apList[ap].rssi);	
+		      }
+		    }
+		    else consoleSerial.println("WIFI - Aucune AP trouvée");
+#endif
+	        if ((nbAP > 0) && apList)
+	        {
+				// Traitement de la sortie
+				// TODO TODO
+				// Libération mémoire
+				free(apList);
+				apList=NULL;
+			}
+	      }
+		}
+	} // wifiScanEnabled
   }
 }
 
