@@ -109,41 +109,34 @@ void loop() {
 			consoleSerial.println(flon);
 			consoleSerial.println(speed);
 #endif
-
 		}
 
-		if (wifiScanEnabled)
-		{
+		if (wifiScanEnabled) {
 			// On n'attend pas de résultat de Scan WIFI, on lance le scan et on rend la main
 			// sans attendre le résultat
-			if ((nextWifiScanRes == 0) && itsTimeFor(nextWifiScan))
-			{
+			if ((nextWifiScanRes == 0) && itsTimeFor(nextWifiScan)) {
 				// Programmation du prochain scan
 				nextWifiScan = millis() + WIFI_SCAN_DELAY;
 				// Scan !
-				if (wifiScanAp(wifly))
-				{
+				if (wifiScanAp(wifly)) {
 					// Si la commande scan réussi, programmation de la lecture du résultat
 					// au bout WIFI_SCAN_TIME ms
 					nextWifiScanRes = millis() + WIFI_SCAN_TIME;
 				}
 				// Si la commande échoue, pas de programmation de la lecture du résultat
-				else nextWifiScanRes = 0;
+				else
+					nextWifiScanRes = 0;
 			}
-			else
-			{ // Sinon lecture du résultat
-				if (itsTimeFor(nextWifiScanRes))
-				{
+			else { // Sinon lecture du résultat
+				if (itsTimeFor(nextWifiScanRes)) {
 					nextWifiScanRes = 0;
 					wifiSerial.listen();
 					nbAP = wifiScanApGetResult(&apList, wifly); // Le scan prend 3s par défaut
 #ifdef DEBUG_TO_CONSOLE
-					if (nbAP > 0)
-					{
+					if (nbAP > 0) {
 						consoleSerial.print("WIFI - AP trouvées : ");
 						consoleSerial.println(nbAP);
-						for (int ap=0; ap < nbAP; ap++)
-						{
+						for (int ap=0; ap < nbAP; ap++) {
 							consoleSerial.print("WIFI - SSID : ");
 							consoleSerial.println(apList[ap].ssid);
 							consoleSerial.print("WIFI - MAC : ");
@@ -154,8 +147,7 @@ void loop() {
 					}
 					else consoleSerial.println("WIFI - Aucune AP trouvée");
 #endif
-					if ((nbAP > 0) && apList)
-					{
+					if ((nbAP > 0) && apList) {
 						// Traitement de la sortie
 						// TODO TODO
 						// Libération mémoire
@@ -168,8 +160,7 @@ void loop() {
 	}
 }
 
-void movment()
-{
+void movment() {
 	sei();
 	int16_t y;
 	lis.getYValue(&y);
@@ -181,7 +172,6 @@ void movment()
 #endif
 }
 
-bool itsTimeFor(unsigned long ts)
-{
+bool itsTimeFor(unsigned long ts) {
 	return (millis() >= ts);
 }
