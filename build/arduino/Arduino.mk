@@ -625,8 +625,8 @@ endif
 ifeq ($(strip $(NO_CORE)),)
 
     # Ideally, this should just check if there are more than one file
-    ifneq ($(words $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS)), 1)
-        ifeq ($(words $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS)), 0)
+    ifneq ($(words $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS) $(LOCAL_CPP_SRCS)), 1)
+        ifeq ($(words $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS) $(LOCAL_CPP_SRCS)), 0)
             $(call show_config_info,No .pde or .ino files found. If you are compiling .c or .cpp files then you need to explicitly include Arduino header files)
         else
             #TODO: Support more than one file. https://github.com/sudar/Arduino-Makefile/issues/49
@@ -679,8 +679,8 @@ endif
 
 ifeq ($(strip $(NO_CORE)),)
     ifndef MONITOR_BAUDRATE
-        ifeq ($(words $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS)), 1)
-            SPEED = $(shell egrep -h 'Serial.begin\([0-9]+\)' $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS) | sed -e 's/[^0-9]//g'| head -n1)
+        ifeq ($(words $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS) $(LOCAL_CPP_SRCS)), 1)
+            SPEED = $(shell egrep -h 'Serial.begin\([0-9]+\)' $(LOCAL_PDE_SRCS) $(LOCAL_INO_SRCS) $(LOCAL_CPP_SRCS) | sed -e 's/[^0-9]//g'| head -n1)
             MONITOR_BAUDRATE = $(findstring $(SPEED),300 1200 2400 4800 9600 14400 19200 28800 38400 57600 115200)
         endif
 
@@ -980,12 +980,23 @@ $(OBJDIR)/%.o: %.ino $(COMMON_DEPS) | $(OBJDIR)
 	@$(MKDIR) $(dir $@)
 	$(CXX) -x c++ -include $(ARDUINO_HEADER) -MMD -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
+#GDTREM
+# the cpp -> o file
+$(OBJDIR)/%.o: %.cpp $(COMMON_DEPS) | $(OBJDIR)
+	@$(MKDIR) $(dir $@)
+	$(CXX) -x c++ -include $(ARDUINO_HEADER) -MMD -c $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
 # generated assembly
 $(OBJDIR)/%.s: %.pde $(COMMON_DEPS) | $(OBJDIR)
 	@$(MKDIR) $(dir $@)
 	$(CXX) -x c++ -include $(ARDUINO_HEADER) -MMD -S -fverbose-asm $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 
 $(OBJDIR)/%.s: %.ino $(COMMON_DEPS) | $(OBJDIR)
+	@$(MKDIR) $(dir $@)
+	$(CXX) -x c++ -include $(ARDUINO_HEADER) -MMD -S -fverbose-asm $(CPPFLAGS) $(CXXFLAGS) $< -o $@
+
+#GDTREM
+$(OBJDIR)/%.s: %.cpp $(COMMON_DEPS) | $(OBJDIR)
 	@$(MKDIR) $(dir $@)
 	$(CXX) -x c++ -include $(ARDUINO_HEADER) -MMD -S -fverbose-asm $(CPPFLAGS) $(CXXFLAGS) $< -o $@
 

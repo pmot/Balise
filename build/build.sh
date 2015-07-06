@@ -15,7 +15,7 @@ case x${PLATFORM} in
   xARDUINO)
 	source ./config.${PLATFORM}
 	pushd ${PLATFORM_DIR}
-	echo "Compilation de core.ino..."
+	echo "Compilation de core..."
 	C_FLAG=${FLAGS} make && echo "Projet compilé dans ${HOME}/BaliseBuild" \
 		|| { echo "La compilation a échoué"; exit 1; }
 

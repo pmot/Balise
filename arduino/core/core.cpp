@@ -8,7 +8,7 @@
 #include <TinyGPS.h>
 #include <Wire.h>
 
-#include "core_parameters.h"
+#include "core.h"
 
 // GPS
 #include "gps.h"
