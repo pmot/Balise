@@ -10,3 +10,8 @@ void gpsRead(TinyGPS gps, SoftwareSerial serial, unsigned long ms)
       gps.encode(serial.read());
   } while (millis() - start < ms);
 }
+
+int getGpsData(struct gpsData* myGpsData)
+{
+	return 0;
+}
