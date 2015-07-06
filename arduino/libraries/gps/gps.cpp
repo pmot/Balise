@@ -47,8 +47,15 @@ bool setGpsData(TinyGPS myGps, struct gpsData* myGpsData)
 	
 	if (!invalid)
 	{
+		// On remet tout à zéro
+		gpsSetup(myGpsData);
 		// On met à jour la structure gpsData
 		// Conversion en chaînes de caractères
+		dtostrf(flat, 8, 6, myGpsData->latitude);
+		dtostrf(flon, 9, 6, myGpsData->longitude);
+		dtostrf(falt, 6, 2, myGpsData->altitude);
+		dtostrf(fspeed, 5, 2, myGpsData->speed);
+		// TODO : hdop, satellites, date, time
 	}
 	
 	return invalid;
@@ -57,10 +64,23 @@ bool setGpsData(TinyGPS myGps, struct gpsData* myGpsData)
 void printGpsData(struct gpsData myGpsData, SoftwareSerial mySerial)
 {
 	mySerial.println("GPS - start");
+	// Latitude
 	mySerial.print("GPS - LATITUDE : ");
 	mySerial.print("GPS - ");
 	mySerial.println(myGpsData.latitude);
-	// Etc...
+	// Longitude
+	mySerial.print("GPS - LONGITUDE : ");
+	mySerial.print("GPS - ");
+	mySerial.println(myGpsData.longitude);
+	// Altitude
+	mySerial.print("GPS - ALTITUDE : ");
+	mySerial.print("GPS - ");
+	mySerial.println(myGpsData.altitude);
+	// Speed
+	mySerial.print("GPS - SPEED : ");
+	mySerial.print("GPS - ");
+	mySerial.println(myGpsData.speed);	
+	// TODO : hdop, satellites, date, time
 	mySerial.println("GPS - stop");
 }
 
