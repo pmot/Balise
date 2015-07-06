@@ -79,8 +79,9 @@ void loop() {
 
 	int16_t y;	// Accélération en mg selon l'axe y
 
-	float flat, flon, speed;
-	unsigned long age;
+	struct gpsData myGpsData;
+	bool gpsDataIsInvalid = true;
+	gpsSetup(&myGpsData);
 
 	nextWifiScan = millis();
 	nextWifiScanRes = 0;
@@ -101,13 +102,17 @@ void loop() {
 			nextGPSRead = millis() + GPS_READ_DELAY;
 			gpsSerial.listen();
 			gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pend GPS_TIME ms
-			gps.f_get_position(&flat, &flon, &age);
-			speed = gps.f_speed_kmph();
-
+			gpsDataIsInvalid = setGpsData(gps, &myGpsData);
 #ifdef DEBUG_TO_CONSOLE
-			consoleSerial.println(flat);
-			consoleSerial.println(flon);
-			consoleSerial.println(speed);
+			if (gpsDataIsInvalid)
+			{
+				consoleSerial.println("GPS - Data not valid, last data : ");
+			}
+			else
+			{
+				consoleSerial.println("GPS - Data valid, new data : ");
+			}
+			printGpsData(myGpsData, consoleSerial);
 #endif
 		}
 
