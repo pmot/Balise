@@ -17,12 +17,11 @@
 // WIFI
 #include <WiFly.h>
 #include "wifi_scan_ap.h"
+
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
 bool wifiScanEnabled = true;
 apEntry tabSSIDScan[NB_SSID_SCAN];
-
-
 
 // ACCEL
 #include <LIS331.h>
@@ -94,9 +93,9 @@ void loop() {
 		// La lecture de l'accéléromètre est prioritaire
 		lis.getYValue(&y);
 #ifdef DEBUG_TO_CONSOLE
-		consoleSerial.print("ACCEL - Axe Y : ");
+		/* consoleSerial.print("ACCEL - Axe Y : ");
 		consoleSerial.print(y);
-		consoleSerial.println(" milli Gs");
+		consoleSerial.println(" milli Gs");*/
 #endif
 
 		// Acquisition GPS
@@ -121,7 +120,7 @@ void loop() {
 		if (wifiScanEnabled) {
 			// On n'attend pas de résultat de Scan WIFI, on lance le scan et on rend la main
 			// sans attendre le résultat
-			if ((nextWifiScanRes == 0) && itsTimeFor(nextWifiScan)) {
+			if ( nextWifiScanRes == 0 && itsTimeFor(nextWifiScan)) {
 				// Programmation du prochain scan
 				nextWifiScan = millis() + WIFI_SCAN_DELAY;
 				// Scan !
@@ -135,9 +134,12 @@ void loop() {
 					nextWifiScanRes = 0;
 			}
 			else { // Sinon lecture du résultat
-				if (itsTimeFor(nextWifiScanRes)) {
+				if (nextWifiScanRes && itsTimeFor(nextWifiScanRes)) {
+
 					nextWifiScanRes = 0;
+
 					wifiSerial.listen();
+
 					nbAP = wifiScanApGetResult(tabSSIDScan, wifly); // Le scan prend 3s par défaut
 #ifdef DEBUG_TO_CONSOLE
 					if (nbAP > 0) {
