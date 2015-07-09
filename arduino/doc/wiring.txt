@@ -51,8 +51,18 @@ Connecteur externe
 
 /!\ Les Tx et Rx sont vus coté arduino
 
-Information sur les cable USB TTL 5V : http://info.ebconnections.com/
+La carte GSM QUECTEL M95
+========================
+Vue de haut
 
+STA/AN						PWM/RI
+PWRKEY/RST					INT/CTS
+RTS/CS						TX
+NC							RX
+NC							NC
+NC							NC
++3.3V						+5V
+GND							GND
 
 
 
