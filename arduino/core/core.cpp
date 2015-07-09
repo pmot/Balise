@@ -20,6 +20,9 @@
 SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
 bool wifiScanEnabled = true;
+apEntry tabSSIDScan[NB_SSID_SCAN];
+
+
 
 // ACCEL
 #include <LIS331.h>
@@ -71,7 +74,6 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
-	struct apEntry* apList;	// Liste des AP WIFI
 	int nbAP = 0;				// Nombre d'AP WIFI
 	unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
 	unsigned long nextWifiScanRes;	// timestamp de la lecture du scan WIFI en cours
@@ -136,29 +138,22 @@ void loop() {
 				if (itsTimeFor(nextWifiScanRes)) {
 					nextWifiScanRes = 0;
 					wifiSerial.listen();
-					nbAP = wifiScanApGetResult(&apList, wifly); // Le scan prend 3s par défaut
+					nbAP = wifiScanApGetResult(tabSSIDScan, wifly); // Le scan prend 3s par défaut
 #ifdef DEBUG_TO_CONSOLE
 					if (nbAP > 0) {
 						consoleSerial.print("WIFI - AP trouvées : ");
 						consoleSerial.println(nbAP);
 						for (int ap=0; ap < nbAP; ap++) {
 							consoleSerial.print("WIFI - SSID : ");
-							consoleSerial.println(apList[ap].ssid);
+							consoleSerial.println(tabSSIDScan[ap].ssid);
 							consoleSerial.print("WIFI - MAC : ");
-							consoleSerial.println(apList[ap].mac);
+							consoleSerial.println(tabSSIDScan[ap].mac);
 							consoleSerial.print("WIFI - RSSI : ");
-							consoleSerial.println(apList[ap].rssi);
+							consoleSerial.println(tabSSIDScan[ap].rssi);
 						}
 					}
 					else consoleSerial.println("WIFI - Aucune AP trouvée");
 #endif
-					if ((nbAP > 0) && apList) {
-						// Traitement de la sortie
-						// TODO TODO
-						// Libération mémoire
-						free(apList);
-						apList=NULL;
-					}
 				}
 			}
 		} // wifiScanEnabled

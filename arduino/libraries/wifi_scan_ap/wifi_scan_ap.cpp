@@ -22,7 +22,7 @@ int wifiScanAp(WiFly myWiFly) {
 		return 1;
 }
 
-int wifiScanApGetResult(struct apEntry** ptAP, WiFly myWiFly) {
+int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
@@ -32,26 +32,31 @@ int wifiScanApGetResult(struct apEntry** ptAP, WiFly myWiFly) {
 	int nbAdded = 0;
 	bool wifiScanBegin = false;
 	bool wifiScanEnd = false;
-	char* newLine = NULL;
 	char* p = NULL;
 	unsigned long end_millis;
+	char newLine[MAX_LENGTH_SCAN_LINE];
 
+	//
 	// Analyse de la sortie, 500ms max !
+	//
 	end_millis = millis() + 500;
+
+
 	while ((!wifiScanEnd) && (millis() < end_millis)) {
-		if (newLine = wifiScanReadLn(myWiFly)) {
+		if (wifiScanReadLn(myWiFly,newLine)) {
 			if (!wifiScanBegin) {
 				if (strstr(newLine, "SCAN:")) {
 					wifiScanBegin = true;
+					//
 					// Le nombre d'AP visibles vient après le ':'
+					//
 					p = strtok(newLine, " ");
 					p = strtok(NULL, " ");
-					nbScanned = atoi(p);
+					nbScanned = atoi(p); // nb de SSID trouvé
 					if (nbScanned == 0)
 						wifiScanEnd = true;
-					// else Allouer l'escpace nécessaire
 					else {
-						*ptAP = (struct apEntry*)malloc(nbScanned*sizeof(struct apEntry));
+						nbScanned = min(nbScanned,NB_SSID_SCAN); // la taille du tableau est limitée
 					}
 				}
 			}
@@ -59,70 +64,61 @@ int wifiScanApGetResult(struct apEntry** ptAP, WiFly myWiFly) {
 				if (strstr(newLine, "END:"))
 					wifiScanEnd = true;
 				else {
+					/////////////////////////////////////////////////////////
 					// Nouvelle entrée apEntry à logger dans la liste apList
 					// Parsing newLine séparation des champs par des ','
 					// RSSI : champ 3
 					// MAC : champ 6
 					// SSID : champ 7
+					/////////////////////////////////////////////////////////
 					p = strtok(newLine, ",");
 					p = strtok(NULL, ",");
 					p = strtok(NULL, ",");
-					if (p) (*ptAP)[nbAdded].rssi = atoi(p);
+					if (p) ptAP[nbAdded].rssi = atoi(p);
 					p = strtok(NULL, ",");
 					p = strtok(NULL, ",");
 					p = strtok(NULL, ",");
 					p = strtok(NULL, ",");
 					p = strtok(NULL, ",");
 					if (p) {
-						strncpy((*ptAP)[nbAdded].mac, p, strlen(p));
-						(*ptAP)[nbAdded].mac[strlen(p)]='\0';
+						strncpy(ptAP[nbAdded].mac, p, LENGTH_MAX_ADDRESS-1);
+						ptAP[nbAdded].mac[LENGTH_MAX_ADDRESS-1]='\0';
 					}
 					p = strtok(NULL, ",");
 					if (p) {
-						strncpy((*ptAP)[nbAdded].ssid, p, strlen(p));
-						(*ptAP)[nbAdded].ssid[strlen(p)]='\0';
+						strncpy(ptAP[nbAdded].ssid, p, LENGTH_SSID-1);
+						ptAP[nbAdded].ssid[LENGTH_SSID-1]='\0';
 					}
 					if (p) nbAdded++;
+
+					if (nbAdded >= nbScanned) wifiScanEnd = true;
+
 				}
 			}
-			free(newLine);
 		}
-	}
-
-	if (nbAdded != nbScanned) {
-		// Mismatch, or truncated
 	}
 
 	return nbAdded;
 }
 
-char* wifiScanReadLn(WiFly myWiFly) {
+int wifiScanReadLn(WiFly myWiFly, char *ptrLine) {
 
 	bool endOfLine = false;
 	char c=' ';
 	int i=0;
-	// Taille max d'une ligne = 100 cars (évite les realloc())
-	char tabCar[101];
-	char* newLine = NULL;
 
-	while (!endOfLine) 	{
+	while (!endOfLine && i<(MAX_LENGTH_SCAN_LINE-1)) 	{
 		if (myWiFly.receive((uint8_t *)&c, 1, 300) > 0) {
 			if (c != '\r')
-				tabCar[i++] = c;
+				ptrLine[i++] = c;
 			else
 				endOfLine = true;
 		}
 		else endOfLine = true; // Plus rien de dispo en entrée...
 	}
 
-	if (i>0) {
-		tabCar[i++] = '\0';
-		newLine = (char*)malloc(i+1);
-		strncpy(newLine, tabCar, i);
-		// Ceinture/bretelle/nul en C !
-		newLine[i] = '\0';
-	}
+	ptrLine[i] = '\0';
 
-	return newLine;
+	return i;
 }
 
