@@ -1,8 +1,10 @@
 // Code qui permet de lister les AP visibles
 #include "wifi_scan_ap.h"
 
-int wifiScanSetup(WiFly myWiFly, const char* newMode) {
+int wifiScanSetup(WiFly myWiFly) {
 	// Scan, nouveau mode nécessite un firmware >= 2.22
+
+	const static char newMode[] PROGMEM = "set sys printlvl 0x4000\r";
 	if (myWiFly.version() < 2.22)
 		return 0;
 
@@ -12,22 +14,27 @@ int wifiScanSetup(WiFly myWiFly, const char* newMode) {
 		return 1;
 }
 
-int wifiScanAp(WiFly myWiFly, const char* scanCmd) {
+int wifiScanAp(WiFly myWiFly) {
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
 	// - 13 canaux
+	const static char scanCmd[] PROGMEM = "scan\r";
 	if (!myWiFly.sendCommand(scanCmd))
 		return 0;
 	else
 		return 1;
 }
 
-int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly, const char* startPattern, const char* stopPattern) {
+int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
 	// - 13 canaux
 	// Retourne la liste des AP au format JSON :
+	// Sauver de la SRAM avec PROGMEM
+	const static char startPattern[] PROGMEM = "SCAN:";
+	const static char stopPattern[] PROGMEM = "END:";
+
 	int nbScanned = 0;
 	int nbAdded = 0;
 	bool wifiScanBegin = false;
