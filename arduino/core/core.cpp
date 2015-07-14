@@ -159,7 +159,7 @@ void loop() {
 	}
 }
 
-void movment() {
+static void movment() {
 	sei();
 	int16_t y;
 	lis.getYValue(&y);
@@ -171,6 +171,6 @@ void movment() {
 #endif
 }
 
-bool itsTimeFor(unsigned long ts) {
+static bool itsTimeFor(unsigned long ts) {
 	return (millis() >= ts);
 }

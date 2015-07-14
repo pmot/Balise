@@ -19,9 +19,9 @@
 #define WIFI_SCAN_DELAY	10000
 
 // Vecteur d'interruption de l'accelerometre (détection de mouvement)
-void movment();
+static void movment();
 // Renvoi vrai si le ts est atteint
-bool itsTimeFor(unsigned long);
+static bool itsTimeFor(unsigned long);
 
 
 #endif
