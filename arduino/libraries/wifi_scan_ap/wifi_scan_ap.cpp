@@ -34,6 +34,7 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 	// Sauver de la SRAM avec PROGMEM
 	const static char startPattern[] PROGMEM = "SCAN:";
 	const static char stopPattern[] PROGMEM = "END:";
+	const static char separator[] PROGMEM = ",";
 
 	int nbScanned = 0;
 	int nbAdded = 0;
@@ -78,20 +79,20 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 					// MAC : champ 6
 					// SSID : champ 7
 					/////////////////////////////////////////////////////////
-					p = strtok(newLine, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
+					p = strtok(newLine, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
 					if (p) ptAP[nbAdded].rssi = atoi(p);
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
 					if (p) {
 						strncpy(ptAP[nbAdded].mac, p, LENGTH_MAX_ADDRESS-1);
 						ptAP[nbAdded].mac[LENGTH_MAX_ADDRESS-1]='\0';
 					}
-					p = strtok(NULL, ",");
+					p = strtok(NULL, separator);
 					if (p) {
 						strncpy(ptAP[nbAdded].ssid, p, LENGTH_SSID-1);
 						ptAP[nbAdded].ssid[LENGTH_SSID-1]='\0';

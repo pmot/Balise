@@ -6,7 +6,7 @@
 
 #define NB_SSID_SCAN 			10
 #define MAX_LENGTH_SCAN_LINE 	110
-#define LENGTH_SSID 			50
+#define LENGTH_SSID 			33
 #define LENGTH_MAX_ADDRESS 		18
 
 int wifiScanSetup(WiFly);
