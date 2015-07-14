@@ -18,8 +18,6 @@
 // Délais entre deux scan d'AP WIFI en ms
 #define WIFI_SCAN_DELAY	10000
 
-// Vecteur d'interruption de l'accelerometre (détection de mouvement)
-static void movment();
 // Renvoi vrai si le ts est atteint
 static bool itsTimeFor(unsigned long);
 
