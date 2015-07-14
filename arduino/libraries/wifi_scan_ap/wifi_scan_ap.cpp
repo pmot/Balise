@@ -1,28 +1,28 @@
 // Code qui permet de lister les AP visibles
 #include "wifi_scan_ap.h"
 
-int wifiScanSetup(WiFly myWiFly) {
+int wifiScanSetup(WiFly myWiFly, const char* newMode) {
 	// Scan, nouveau mode nécessite un firmware >= 2.22
 	if (myWiFly.version() < 2.22)
 		return 0;
 
-	if (!myWiFly.sendCommand("set sys printlvl 0x4000\r"))
+	if (!myWiFly.sendCommand(newMode))
 		return 0;
 	else
 		return 1;
 }
 
-int wifiScanAp(WiFly myWiFly) {
+int wifiScanAp(WiFly myWiFly, const char* scanCmd) {
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
 	// - 13 canaux
-	if (!myWiFly.sendCommand("scan\r"))
+	if (!myWiFly.sendCommand(scanCmd))
 		return 0;
 	else
 		return 1;
 }
 
-int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
+int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly, const char* startPattern, const char* stopPattern) {
 
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
@@ -45,7 +45,7 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 	while ((!wifiScanEnd) && (millis() < end_millis)) {
 		if (wifiScanReadLn(myWiFly,newLine)) {
 			if (!wifiScanBegin) {
-				if (strstr(newLine, "SCAN:")) {
+				if (strstr(newLine, startPattern)) {
 					wifiScanBegin = true;
 					//
 					// Le nombre d'AP visibles vient après le ':'
@@ -61,7 +61,7 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 				}
 			}
 			else {
-				if (strstr(newLine, "END:"))
+				if (strstr(newLine, stopPattern))
 					wifiScanEnd = true;
 				else {
 					/////////////////////////////////////////////////////////

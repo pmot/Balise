@@ -2,6 +2,7 @@
 
 #define DEBUG_TO_CONSOLE
 
+#include <avr/pgmspace.h>
 #include <Arduino.h>
 #include <stdlib.h>
 #include <SoftwareSerial.h>
@@ -21,8 +22,11 @@ SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
 WiFly wifly(&wifiSerial);
 bool wifiScanEnabled = true;
 apEntry tabSSIDScan[NB_SSID_SCAN];
-
-
+// Sauver de la SRAM avec PROGMEM
+const char scanCmd[] PROGMEM = "scan\r";
+const char newMode[] PROGMEM = "set sys printlvl 0x4000\r";
+const char startPattern[] PROGMEM = "SCAN:";
+const char stopPattern[] PROGMEM = "END:";
 
 // ACCEL
 #include <LIS331.h>
@@ -63,13 +67,13 @@ void setup() {
 	delay(3000);
 
 	// setup wifiScan
-	if (wifiScanSetup(wifly))
+	if (wifiScanSetup(wifly, newMode))
 		consoleSerial.println(F("WIFI SCAN SETUP : OK"));
 	else {
 		consoleSerial.println(F("WIFI SCAN SETUP : NOT OK"));
 		wifiScanEnabled = false;
 	}
-	consoleSerial.println("INIT : Done");
+	consoleSerial.println(F("INIT : Done"));
 }
 
 // the loop function runs over and over again forever
@@ -125,7 +129,7 @@ void loop() {
 				// Programmation du prochain scan
 				nextWifiScan = millis() + WIFI_SCAN_DELAY;
 				// Scan !
-				if (wifiScanAp(wifly)) {
+				if (wifiScanAp(wifly, scanCmd)) {
 					// Si la commande scan réussi, programmation de la lecture du résultat
 					// au bout WIFI_SCAN_TIME ms
 					nextWifiScanRes = millis() + WIFI_SCAN_TIME;
@@ -138,7 +142,7 @@ void loop() {
 				if (itsTimeFor(nextWifiScanRes)) {
 					nextWifiScanRes = 0;
 					wifiSerial.listen();
-					nbAP = wifiScanApGetResult(tabSSIDScan, wifly); // Le scan prend 3s par défaut
+					nbAP = wifiScanApGetResult(tabSSIDScan, wifly, startPattern, stopPattern); // Le scan prend 3s par défaut
 #ifdef DEBUG_TO_CONSOLE
 					if (nbAP > 0) {
 						consoleSerial.print(F("WIFI - AP trouvées : "));
