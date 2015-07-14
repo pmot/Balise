@@ -45,7 +45,7 @@ void setup() {
 
 	// Initialisation des lignes serial, i2c
 	consoleSerial.begin(9600);
-	consoleSerial.println("INIT : Begin");
+	consoleSerial.println(F("INIT : Begin"));
 	gpsSerial.begin(9600);
 	Wire.begin();
 
@@ -64,9 +64,9 @@ void setup() {
 
 	// setup wifiScan
 	if (wifiScanSetup(wifly))
-		consoleSerial.println("WIFI SCAN SETUP : OK");
+		consoleSerial.println(F("WIFI SCAN SETUP : OK"));
 	else {
-		consoleSerial.println("WIFI SCAN SETUP : NOT OK");
+		consoleSerial.println(F("WIFI SCAN SETUP : NOT OK"));
 		wifiScanEnabled = false;
 	}
 	consoleSerial.println("INIT : Done");
@@ -94,9 +94,9 @@ void loop() {
 		// La lecture de l'accéléromètre est prioritaire
 		lis.getYValue(&y);
 #ifdef DEBUG_TO_CONSOLE
-		consoleSerial.print("ACCEL - Axe Y : ");
+		consoleSerial.print(F("ACCEL - Axe Y : "));
 		consoleSerial.print(y);
-		consoleSerial.println(" milli Gs");
+		consoleSerial.println(F(" milli Gs"));
 #endif
 
 		// Acquisition GPS
@@ -108,11 +108,11 @@ void loop() {
 #ifdef DEBUG_TO_CONSOLE
 			if (gpsDataIsInvalid)
 			{
-				consoleSerial.println("GPS - Data not valid, last data : ");
+				consoleSerial.println(F("GPS - Data not valid, last data : "));
 			}
 			else
 			{
-				consoleSerial.println("GPS - Data valid, new data : ");
+				consoleSerial.println(F("GPS - Data valid, new data : "));
 			}
 			printGpsData(myGpsData, consoleSerial);
 #endif
@@ -141,18 +141,18 @@ void loop() {
 					nbAP = wifiScanApGetResult(tabSSIDScan, wifly); // Le scan prend 3s par défaut
 #ifdef DEBUG_TO_CONSOLE
 					if (nbAP > 0) {
-						consoleSerial.print("WIFI - AP trouvées : ");
+						consoleSerial.print(F("WIFI - AP trouvées : "));
 						consoleSerial.println(nbAP);
 						for (int ap=0; ap < nbAP; ap++) {
-							consoleSerial.print("WIFI - SSID : ");
+							consoleSerial.print(F("WIFI - SSID : "));
 							consoleSerial.println(tabSSIDScan[ap].ssid);
-							consoleSerial.print("WIFI - MAC : ");
+							consoleSerial.print(F("WIFI - MAC : "));
 							consoleSerial.println(tabSSIDScan[ap].mac);
-							consoleSerial.print("WIFI - RSSI : ");
+							consoleSerial.print(F("WIFI - RSSI : "));
 							consoleSerial.println(tabSSIDScan[ap].rssi);
 						}
 					}
-					else consoleSerial.println("WIFI - Aucune AP trouvée");
+					else consoleSerial.println(F("WIFI - Aucune AP trouvée"));
 #endif
 				}
 			}
@@ -166,9 +166,9 @@ void movment() {
 	lis.getYValue(&y);
 	cli();
 #ifdef DEBUG_TO_CONSOLE
-	consoleSerial.print("ACCEL (INTR) - Axe Y : ");
+	consoleSerial.print(F("ACCEL (INTR) - Axe Y : "));
 	consoleSerial.print(y);
-	consoleSerial.println(" milli Gs");
+	consoleSerial.println(F(" milli Gs"));
 #endif
 }
 
