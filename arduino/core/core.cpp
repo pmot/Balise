@@ -8,6 +8,7 @@
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
 #include <Wire.h>
+#include <GSMM95.h>
 
 #include "core.h"
 
@@ -55,6 +56,8 @@ void setup() {
 	// Accéléromètre
 	accelerometerSetup(lis);
 
+	// GSM
+	
 	// extinction de la LED à la fin de l'initialisation
 	// on pourrait la faire clignoter en cas d'erreur durant cette phase
 	digitalWrite(13, LOW);
@@ -89,6 +92,9 @@ void loop() {
 	nextWifiScanRes = 0;
 	nextGPSRead = millis();
 
+	// connection state
+	boolean notConnected = true;
+	
 	while(1) {
 
 		// La lecture de l'accéléromètre est prioritaire

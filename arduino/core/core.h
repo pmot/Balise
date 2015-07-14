@@ -9,6 +9,15 @@
 #define CONSOLE_RX	12
 #define CONSOLE_TX	11
 
+
+// GSM
+// PIN Number
+#define PINNUMBER ""
+// APN data
+#define GPRS_APN       "websfr" // replace your GPRS APN
+#define GPRS_LOGIN     ""    // replace with your GPRS login
+#define GPRS_PASSWORD  "" // replace with your GPRS password
+
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
 #define GPS_READ_TIME	1000
 // Délai entre deux lectures de position GPS en ms

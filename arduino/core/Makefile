@@ -4,7 +4,7 @@ USER_LIB_PATH = ${ARDUINO_DIR}/libraries
 # Répertoire des librairies internes, relatif au projet core
 PROJECT_LIB_PATH = ../libraries
 # Liste non ordonnée des librairies internes, externes et système
-ARDUINO_LIBS = Wire SoftwareSerial TinyGPS-13 LIS331/src WiFi_Shield-master \
+ARDUINO_LIBS = Wire SoftwareSerial TinyGPS-13 LIS331/src WiFi_Shield-master GSMM95/src \
 			   wifi_scan_ap gps sample_lib accelerometer cellular
 OBJDIR = ${HOME}/BaliseBuild
 BOARD_TAG = pro.menu.cpu.16MHzatmega328
