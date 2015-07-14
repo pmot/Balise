@@ -35,6 +35,7 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 	const static char startPattern[] PROGMEM = "SCAN:";
 	const static char stopPattern[] PROGMEM = "END:";
 	const static char separator[] PROGMEM = ",";
+	const static char space[] PROGMEM = " ";
 
 	int nbScanned = 0;
 	int nbAdded = 0;
@@ -58,8 +59,8 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 					//
 					// Le nombre d'AP visibles vient après le ':'
 					//
-					p = strtok(newLine, " ");
-					p = strtok(NULL, " ");
+					p = strtok(newLine, space);
+					p = strtok(NULL, space);
 					nbScanned = atoi(p); // nb de SSID trouvé
 					if (nbScanned == 0)
 						wifiScanEnd = true;
