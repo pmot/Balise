@@ -77,48 +77,48 @@ bool setGpsData(TinyGPS myGps, struct gpsData* myGpsData)
 
 void printGpsData(struct gpsData myGpsData, SoftwareSerial mySerial)
 {
-	mySerial.println("GPS - start");
+	mySerial.println(F("GPS - start"));
 	// Latitude
-	mySerial.print("GPS - LATITUDE : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - LATITUDE : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.latitude);
 	// Longitude
-	mySerial.print("GPS - LONGITUDE : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - LONGITUDE : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.longitude);
 	// Altitude
-	mySerial.print("GPS - ALTITUDE : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - ALTITUDE : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.altitude);
 	// Speed
-	mySerial.print("GPS - SPEED : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - SPEED : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.speed);
 	// Fix Age
-	mySerial.print("GPS - Fix Age : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - Fix Age : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.fixAge);
 	// HDOP
-	mySerial.print("GPS - HDOP : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - HDOP : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.hdop);
 	// Satellites
-	mySerial.print("GPS - SATS : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - SATS : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.satellites);
 	// Date
-	mySerial.print("GPS - Date : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - Date : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.date);
 	// Time
-	mySerial.print("GPS - Time : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - Time : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.time);
 	// Date Age
-	mySerial.print("GPS - Date Age : ");
-	mySerial.print("GPS - ");
+	mySerial.print(F("GPS - Date Age : "));
+	mySerial.print(F("GPS - "));
 	mySerial.println(myGpsData.dateAge);
 
-	mySerial.println("GPS - stop");
+	mySerial.println(F("GPS - stop"));
 }
 
