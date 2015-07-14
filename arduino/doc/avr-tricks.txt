@@ -1,0 +1,3 @@
+Pour développer sur l'avr, quelques trucs pour l'optimisation :
+
+http://www.atmel.com/images/doc8453.pdf
