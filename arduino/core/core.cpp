@@ -54,7 +54,6 @@ void setup() {
 
 	// Accéléromètre
 	accelerometerSetup(lis);
-	attachInterrupt(0, movment, RISING);
 
 	// extinction de la LED à la fin de l'initialisation
 	// on pourrait la faire clignoter en cas d'erreur durant cette phase
@@ -62,18 +61,20 @@ void setup() {
 	delay(3000);
 
 	// setup wifiScan
-	if (wifiScanSetup(wifly))
+	if (wifiScanEnabled=wifiScanSetup(wifly))
+	{
 		consoleSerial.println(F("WIFI SCAN SETUP : OK"));
-	else {
+	}
+	else
+	{
 		consoleSerial.println(F("WIFI SCAN SETUP : NOT OK"));
-		wifiScanEnabled = false;
 	}
 	consoleSerial.println(F("INIT : Done"));
 }
 
 // the loop function runs over and over again forever
 void loop() {
-	int nbAP = 0;				// Nombre d'AP WIFI
+	uint8_t nbAP = 0;				// Nombre d'AP WIFI
 	unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
 	unsigned long nextWifiScanRes;	// timestamp de la lecture du scan WIFI en cours
 	unsigned long nextGPSRead;		// timestamp de la prochaine lecture des coordonnées GPS
@@ -157,18 +158,6 @@ void loop() {
 			}
 		} // wifiScanEnabled
 	}
-}
-
-static void movment() {
-	sei();
-	int16_t y;
-	lis.getYValue(&y);
-	cli();
-#ifdef DEBUG_TO_CONSOLE
-	consoleSerial.print(F("ACCEL (INTR) - Axe Y : "));
-	consoleSerial.print(y);
-	consoleSerial.println(F(" milli Gs"));
-#endif
 }
 
 static bool itsTimeFor(unsigned long ts) {
