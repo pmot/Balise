@@ -8,13 +8,15 @@
 #include <SoftwareSerial.h>
 #include <TinyGPS.h>
 #include <Wire.h>
-#include <GSMM95.h>
 
 #include "core.h"
 
+// GSM
+#include "GSMM95.h"
+GSMM95 myGSM;
+
 // GPS
 #include "gps.h"
-#include "cellular.h"
 
 // WIFI
 #include <WiFly.h>
@@ -57,6 +59,8 @@ void setup() {
 	accelerometerSetup(lis);
 
 	// GSM
+	myGSM.begin();
+	myGSM.init("toto");
 	
 	// extinction de la LED à la fin de l'initialisation
 	// on pourrait la faire clignoter en cas d'erreur durant cette phase
@@ -91,10 +95,10 @@ void loop() {
 	nextWifiScan = millis();
 	nextWifiScanRes = 0;
 	nextGPSRead = millis();
-
-	// connection state
-	boolean notConnected = true;
 	
+	myGSM.dataConnect(apnName, GPRS_LOGIN, GPRS_PASSWORD);
+	myGSM.sendHttpReq("monserveur.fr", "balise");
+
 	while(1) {
 
 		// La lecture de l'accéléromètre est prioritaire
