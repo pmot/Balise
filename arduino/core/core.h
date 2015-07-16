@@ -1,13 +1,28 @@
-#ifndef __CORE_PARAMETERS_H__
-#define __CORE_PARAMETERS_H__
+#ifndef __CORE_H__
+#define __CORE_H__
 
 // Définition des pin RX/TX des modules
+#define GSM_TX	 0	// UART
+#define GSM_RX	 1	// " "
 #define WIFI_TX  4
 #define WIFI_RX  5
 #define GPS_TX   6
 #define GPS_RX   7
-#define CONSOLE_RX	12
 #define CONSOLE_TX	11
+#define CONSOLE_RX	12
+
+// GSM
+// PIN Spécifiques
+#define GSM_RST		9
+#define GSM_STATUS	10
+// Code PIN
+#define GSM_PIN			""
+// APN
+// #define GPRS_APN		"websfr"
+#define GPRS_LOGIN		""
+#define GPRS_PASSWORD	""
+const static char apnName[] PROGMEM = "websfr";
+
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
 #define GPS_READ_TIME	1000
@@ -18,11 +33,8 @@
 // Délais entre deux scan d'AP WIFI en ms
 #define WIFI_SCAN_DELAY	10000
 
-// Vecteur d'interruption de l'accelerometre (détection de mouvement)
-void movment();
 // Renvoi vrai si le ts est atteint
-bool itsTimeFor(unsigned long);
+static bool itsTimeFor(unsigned long);
 
 
 #endif
- 

@@ -1,35 +1,44 @@
 // Code qui permet de lister les AP visibles
 #include "wifi_scan_ap.h"
 
-int wifiScanSetup(WiFly myWiFly) {
+bool wifiScanSetup(WiFly myWiFly) {
 	// Scan, nouveau mode nécessite un firmware >= 2.22
-	if (myWiFly.version() < 2.22)
-		return 0;
 
-	if (!myWiFly.sendCommand("set sys printlvl 0x4000\r"))
-		return 0;
+	const static char newMode[] PROGMEM = "set sys printlvl 0x4000\r";
+	if (myWiFly.version() < 2.22)
+		return false;
+
+	if (!myWiFly.sendCommand(newMode))
+		return false;
 	else
-		return 1;
+		return true;
 }
 
-int wifiScanAp(WiFly myWiFly) {
+bool wifiScanAp(WiFly myWiFly) {
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
 	// - 13 canaux
-	if (!myWiFly.sendCommand("scan\r"))
-		return 0;
+	const static char scanCmd[] PROGMEM = "scan\r";
+	if (!myWiFly.sendCommand(scanCmd))
+		return false;
 	else
-		return 1;
+		return true;
 }
 
-int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
+uint8_t wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
 	// - 13 canaux
 	// Retourne la liste des AP au format JSON :
-	int nbScanned = 0;
-	int nbAdded = 0;
+	// Sauver de la SRAM avec PROGMEM
+	const static char startPattern[] PROGMEM = "SCAN:";
+	const static char stopPattern[] PROGMEM = "END:";
+	const static char separator[] PROGMEM = ",";
+	const static char space[] PROGMEM = " ";
+
+	uint8_t nbScanned = 0;
+	uint8_t nbAdded = 0;
 	bool wifiScanBegin = false;
 	bool wifiScanEnd = false;
 	char* p = NULL;
@@ -45,13 +54,13 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 	while ((!wifiScanEnd) && (millis() < end_millis)) {
 		if (wifiScanReadLn(myWiFly,newLine)) {
 			if (!wifiScanBegin) {
-				if (strstr(newLine, "SCAN:")) {
+				if (strstr(newLine, startPattern)) {
 					wifiScanBegin = true;
 					//
 					// Le nombre d'AP visibles vient après le ':'
 					//
-					p = strtok(newLine, " ");
-					p = strtok(NULL, " ");
+					p = strtok(newLine, space);
+					p = strtok(NULL, space);
 					nbScanned = atoi(p); // nb de SSID trouvé
 					if (nbScanned == 0)
 						wifiScanEnd = true;
@@ -61,7 +70,7 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 				}
 			}
 			else {
-				if (strstr(newLine, "END:"))
+				if (strstr(newLine, stopPattern))
 					wifiScanEnd = true;
 				else {
 					/////////////////////////////////////////////////////////
@@ -71,20 +80,20 @@ int wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
 					// MAC : champ 6
 					// SSID : champ 7
 					/////////////////////////////////////////////////////////
-					p = strtok(newLine, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
+					p = strtok(newLine, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
 					if (p) ptAP[nbAdded].rssi = atoi(p);
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
-					p = strtok(NULL, ",");
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
+					p = strtok(NULL, separator);
 					if (p) {
 						strncpy(ptAP[nbAdded].mac, p, LENGTH_MAX_ADDRESS-1);
 						ptAP[nbAdded].mac[LENGTH_MAX_ADDRESS-1]='\0';
 					}
-					p = strtok(NULL, ",");
+					p = strtok(NULL, separator);
 					if (p) {
 						strncpy(ptAP[nbAdded].ssid, p, LENGTH_SSID-1);
 						ptAP[nbAdded].ssid[LENGTH_SSID-1]='\0';

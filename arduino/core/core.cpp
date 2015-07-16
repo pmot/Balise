@@ -2,6 +2,7 @@
 
 #define DEBUG_TO_CONSOLE
 
+#include <avr/pgmspace.h>
 #include <Arduino.h>
 #include <stdlib.h>
 #include <SoftwareSerial.h>
@@ -10,9 +11,12 @@
 
 #include "core.h"
 
+// GSM
+#include "GSMM95.h"
+GSMM95 myGSM;
+
 // GPS
 #include "gps.h"
-#include "cellular.h"
 
 // WIFI
 #include <WiFly.h>
@@ -54,26 +58,39 @@ void setup() {
 
 	// Accéléromètre
 	accelerometerSetup(lis);
-	attachInterrupt(0, movment, RISING);
 
+	// GSM
+	myGSM.begin();
+	myGSM.init("toto");
+	
 	// extinction de la LED à la fin de l'initialisation
 	// on pourrait la faire clignoter en cas d'erreur durant cette phase
 	digitalWrite(13, LOW);
 	delay(3000);
 
 	// setup wifiScan
+<<<<<<< HEAD
 	if (wifiScanSetup(wifly))
 		consoleSerial.println("WIFI SCAN SETUP : OK");
 	else {
 		consoleSerial.println("WIFI SCAN SETUP : NOT OK");
 		wifiScanEnabled = false;
+=======
+	if (wifiScanEnabled=wifiScanSetup(wifly))
+	{
+		consoleSerial.println(F("WIFI SCAN SETUP : OK"));
 	}
-	consoleSerial.println("INIT : Done");
+	else
+	{
+		consoleSerial.println(F("WIFI SCAN SETUP : NOT OK"));
+>>>>>>> 30559aef0eb17bf448ef75eba8ba2b17532352a2
+	}
+	consoleSerial.println(F("INIT : Done"));
 }
 
 // the loop function runs over and over again forever
 void loop() {
-	int nbAP = 0;				// Nombre d'AP WIFI
+	uint8_t nbAP = 0;				// Nombre d'AP WIFI
 	unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
 	unsigned long nextWifiScanRes;	// timestamp de la lecture du scan WIFI en cours
 	unsigned long nextGPSRead;		// timestamp de la prochaine lecture des coordonnées GPS
@@ -87,6 +104,9 @@ void loop() {
 	nextWifiScan = millis();
 	nextWifiScanRes = 0;
 	nextGPSRead = millis();
+	
+	myGSM.dataConnect(apnName, GPRS_LOGIN, GPRS_PASSWORD);
+	myGSM.sendHttpReq("monserveur.fr", "balise");
 
 	while(1) {
 
@@ -162,6 +182,7 @@ void loop() {
 	}
 }
 
+<<<<<<< HEAD
 void movment() {
 	sei();
 	int16_t y;
@@ -175,5 +196,8 @@ void movment() {
 }
 
 bool itsTimeFor(unsigned long ts) {
+=======
+static bool itsTimeFor(unsigned long ts) {
+>>>>>>> 30559aef0eb17bf448ef75eba8ba2b17532352a2
 	return (millis() >= ts);
 }

@@ -6,12 +6,12 @@
 
 #define NB_SSID_SCAN 			1
 #define MAX_LENGTH_SCAN_LINE 	110
-#define LENGTH_SSID 			50
+#define LENGTH_SSID 			33
 #define LENGTH_MAX_ADDRESS 		18
 
-int wifiScanSetup(WiFly);
-int wifiScanAp(WiFly);
-int wifiScanApGetResult(struct apEntry*, WiFly);
+bool wifiScanSetup(WiFly);
+bool wifiScanAp(WiFly);
+uint8_t wifiScanApGetResult(struct apEntry*, WiFly);
 int wifiScanReadLn(WiFly, char *);
 
 struct apEntry
