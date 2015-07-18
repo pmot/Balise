@@ -1,9 +1,5 @@
 Ce document décrit la connexion au MCU Arduino Pro
 
-Cellulaire
-==========
-La communication s'effectue par le port UART 1.
-
 WiFi
 ====
 La communication s'effectue via SoftwareSerial.
@@ -38,6 +34,12 @@ Pin 11 : Tx carte
 Pin 12 : Rx carte
 Initialisation: SoftwareSerial consoleSerial(12, 11)
 
+Câble USB
+=========
+Noir : Masse
+Jaune : TX
+Vert : RX
+
 Connecteur externe
 ===================
 1 - Tx Console
@@ -58,11 +60,23 @@ Vue de haut
 STA/AN						PWM/RI
 PWRKEY/RST					INT/CTS
 RTS/CS						TX
-NC							RX
-NC							NC
-NC							NC
+NC						RX
+NC						NC
+NC						NC
 +3.3V						+5V
-GND							GND
+GND						GND
 
+La carte est connectée sur l'UART0.
 
+*******************
+ATTENTION ATTENTION
+*******************
+La carte GSM doit être déconnectée au moment de la programmation, sinon
+celle-ci échouera au moment du téléversement.
+
+De même, la communication entre la carte GSM et la MCU ne fonctionnera pas
+si la MCU est raccordée à l'unité de programmation.
+
+Cela est dû à des interférences (nature ?) entre la carte GSM et le module de
+programmation.
 
