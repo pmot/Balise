@@ -1,5 +1,6 @@
 // Core program
 
+#define DEBUG_ACCEL_TO_CONSOLE
 #define DEBUG_TO_CONSOLE
 
 #include <avr/pgmspace.h>
@@ -11,9 +12,12 @@
 
 #include "core.h"
 
+// Console
+SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
+
 // GSM
 #include "GSMM95.h"
-GSMM95 myGSM;
+GSMM95 myGSM(GSM_PWRK, &consoleSerial);
 
 // GPS
 #include "gps.h"
@@ -31,9 +35,6 @@ apEntry tabSSIDScan[NB_SSID_SCAN];
 #include <LIS331.h>
 #include "accelerometer.h"
 LIS331 lis;
-
-// Console
-SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
 
 // GPS
 SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
@@ -97,16 +98,17 @@ void loop() {
 	nextGPSRead = millis();
 	
 	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
-	myGSM.SendHttpReq("monserveur.fr", "balise");
+	myGSM.SendHttpReq(server, (char*)urlInit);
+	myGSM.Disconnect();
 
 	while(1) {
 
 		// La lecture de l'accéléromètre est prioritaire
 		lis.getYValue(&y);
-#ifdef DEBUG_TO_CONSOLE
-		/* consoleSerial.print("ACCEL - Axe Y : ");
+#ifdef DEBUG_ACCEL_TO_CONSOLE
+		consoleSerial.print(F("ACCEL - Axe Y : "));
 		consoleSerial.print(y);
-		consoleSerial.println(" milli Gs");*/
+		consoleSerial.println(F(" milli Gs"));
 #endif
 
 		// Acquisition GPS

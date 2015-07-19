@@ -2,14 +2,15 @@
 #define __GSMM95_H__
   
 #include <Arduino.h>
+#include <SoftwareSerial.h>
 
 #define GSM_BUFSZ		150		// Taille du buffer circulaire
 #define GSM_BAUDRATE	115200
-#define GSM_PWRK		12		// TODO : à remplacer
+// #define GSM_PWRK		12		// TODO : à remplacer
 
 static const char gsmStrings[][10] PROGMEM =
 {
-	"TOTO",
+	"OK",
 	"TATA",
 	"TITI"
 };
@@ -17,7 +18,7 @@ static const char gsmStrings[][10] PROGMEM =
 class GSMM95
 {
     public:      
-      GSMM95();			// Constructeur, baudrate
+      GSMM95(byte, SoftwareSerial*);			// Constructeur
 	  int  Init(const char*);
 	  int Status();
       
@@ -27,7 +28,9 @@ class GSMM95
     
     private:
 	  char gsmBuf[GSM_BUFSZ];
-	  
+	  byte pwrKey;
+	  int  state;
+	  SoftwareSerial* pconsole;
       int  Expect(int);
       byte Automate(char);
 };

@@ -1,27 +1,29 @@
 #ifndef __CORE_H__
 #define __CORE_H__
 
+// Identifiant de la balise
+#define	BALISE_ID	"AVEZE"
+
 // Définition des pin RX/TX des modules
-#define GSM_TX	 0	// UART
-#define GSM_RX	 1	// " "
+// #define GSM_TX	 0	// UART
+// #define GSM_RX	 1	// " "
 #define WIFI_TX  4
 #define WIFI_RX  5
 #define GPS_TX   6
 #define GPS_RX   7
 #define CONSOLE_TX	11
 #define CONSOLE_RX	12
-
 // GSM
-// PIN Spécifiques
-#define GSM_RST		9
-#define GSM_STATUS	10
-// Code PIN
-#define GSM_PIN			""
+#define GSM_PWRK	10
 // APN
 static const char gprsAPN[] PROGMEM = "websfr";
 static const char gprsLogin[] PROGMEM = "";
 static const char gprsPassword[] PROGMEM = "";
 static const char pinCode[] PROGMEM = "1234";
+// Serveur
+static const char server[] PROGMEM = "geolocsp.com";
+static const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
+static const char urlWS[] PROGMEM = "POST /webservice/ws";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
@@ -35,6 +37,5 @@ static const char pinCode[] PROGMEM = "1234";
 
 // Renvoi vrai si le ts est atteint
 static bool itsTimeFor(unsigned long);
-
 
 #endif
