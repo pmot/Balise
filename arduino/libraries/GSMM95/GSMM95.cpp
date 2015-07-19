@@ -423,18 +423,18 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 void GSMM95::Disconnect()
 {
-  GSMM95::state = 0;
-  do
-  {
-    if(GSMM95::state == 0)
-    {
+  // GSMM95::state = 0;
+  // do
+  // {
+  //  if(GSMM95::state == 0)
+  //  {
       Serial.print(F("AT+QIDEACT\r"));		// Deactivate GPRS context
       // if(Expect(10000) == 1) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }
-      if(Expect(10000) == 1) { break; } else { GSMM95::state = GSMSTATE_INVALID; }
+      // if(Expect(10000) == 1) { break; } else { GSMM95::state = GSMSTATE_INVALID; }
 
-    }
-  }
-  while(GSMM95::state < GSMSTATE_INVALID);
+  //  }
+  // }
+  // while(GSMM95::state < GSMSTATE_INVALID);
 }
 
  
