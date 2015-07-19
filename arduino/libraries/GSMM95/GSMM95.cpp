@@ -44,16 +44,16 @@ int GSMM95::Init(const char* pinCode)
 		delay(500);
 	}
 
-	GSMM95::state = GSMSTATE_UNKNOWN;
+	GSMM95::state = GSMINITSTAGE_START;
 	time = 0;
 	do
 	{
-		if(GSMM95::state == GSMSTATE_UNKNOWN)
+		if(GSMM95::state == GSMINITSTAGE_START)
 		{
 			Serial.print(F("AT\r"));     
 			if(Expect(1000) == GSMSTATE_OK)
 			{
-				GSMM95::state += GSMSTATE_NEXT_STAGE;
+				GSMM95::state = GSMINITSTAGE_1;
 			}
 			else
 			{
@@ -61,12 +61,12 @@ int GSMM95::Init(const char* pinCode)
 			}
 		}
 
-		if(GSMM95::state == GSMSTATE_OK)
+		if(GSMM95::state == GSMINITSTAGE_1)
 		{
 			Serial.print(F("ATE0\r"));
 			if(Expect(1000) == GSMSTATE_OK)
 			{
-				GSMM95::state += GSMSTATE_NEXT_STAGE; 
+				GSMM95::state = GSMINITSTAGE_2; 
 			}
 			else
 			{ 
@@ -74,28 +74,28 @@ int GSMM95::Init(const char* pinCode)
 			}
 		}
 	
-		if(GSMM95::state == GSMSTATE_PIN_REQ)
+		if(GSMM95::state == GSMINITSTAGE_2)
 		{								// after 0,5 - 10 sec., depends of the SIM card
 			switch (Expect(10000)) 		// wait for initial URC presentation "+CPIN: SIM PIN" or similar
 			{                                                                         
 				case GSMSTATE_PIN_REQ:  
-					GSMM95::state = GSMSTATE_STAGE4; // get +CPIN: SIM PIN
+					GSMM95::state = GSMINITSTAGE_4; // get +CPIN: SIM PIN
 					break; 													     
 				case 3:  
-					GSMM95::state = GSMSTATE_STAGE5; // get +CPIN: READY
+					GSMM95::state = GSMINITSTAGE_5; // get +CPIN: READY
 					break;												           
 				default: 
-					GSMM95::state = GSMSTATE_PIN_RDY;
+					GSMM95::state = GSMINITSTAGE_3;
 					break;
 			}
 		}
 	
-		if(GSMM95::state == GSMSTATE_PIN_RDY)
+		if(GSMM95::state == GSMINITSTAGE_3)
 		{
 		  switch (Expect(10000)) 		// new try: wait for initial URC presentation "+CPIN: SIM PIN" or similar
 		   {                                                                         
-			 case GSMSTATE_PIN_REQ: GSMM95::state = GSMSTATE_PIN_RDY; break; 		// get +CPIN: SIM PIN
-			 case GSMSTATE_PIN_RDY: GSMM95::state = GSMSTATE_STAGE5; break;			// get +CPIN: READY
+			 case GSMSTATE_PIN_REQ: GSMM95::state = GSMINITSTAGE_3; break; 		// get +CPIN: SIM PIN
+			 case GSMSTATE_PIN_RDY: GSMM95::state = GSMINITSTAGE_5; break;		// get +CPIN: READY
 			 default: 
 			 { 
 				  GSMM95::pconsole->print(F("Serious SIM-error: >"));
@@ -106,36 +106,36 @@ int GSMM95::Init(const char* pinCode)
 			}  
 		}
 	
-		if(GSMM95::state == GSMSTATE_STAGE4)
+		if(GSMM95::state == GSMINITSTAGE_4)
 		{
 		  Serial.print(F("AT+CPIN="));           // enter pin (SIM)     
 		  Serial.print(pinCode);
 		  Serial.print('\r');
-		  if(Expect(1000) == GSMSTATE_PIN_RDY) { GSMM95::state = GSMSTATE_STAGE4; } else { GSMM95::state = GSMSTATE_INVALID; } 
+		  if(Expect(1000) == GSMSTATE_PIN_RDY) { GSMM95::state = GSMINITSTAGE_4; } else { GSMM95::state = GSMSTATE_INVALID; } 
 		}
 	
-		if(GSMM95::state == GSMSTATE_STAGE5)
+		if(GSMM95::state == GSMINITSTAGE_5)
 		{
 		  Serial.print(F("AT+IPR="));        // set Baudrate
 		  Serial.print(GSM_BAUDRATE);
 		  Serial.print('\r');
-		  if(Expect(1000) == GSMSTATE_OK) { GSMM95::state += GSMSTATE_NEXT_STAGE; } else { GSMM95::state = GSMSTATE_INVALID; } 
+		  if(Expect(1000) == GSMSTATE_OK) { GSMM95::state += GSMINITSTAGE_6; } else { GSMM95::state = GSMSTATE_INVALID; } 
 		}
 	
-		if(GSMM95::state == 6)
+		if(GSMM95::state == GSMINITSTAGE_6)
 		{
-			Serial.print(F("AT+QIURC=0\r"));       // disable initial URC presentation   
+			Serial.print(F("AT+QIURC=0\r"));    // disable initial URC presentation   
 			time = 0;  
-			if(Expect(1000) == 1) { GSMM95::state += 1; } else { GSMM95::state = 1000; } 
+			if(Expect(1000) == 1) { GSMM95::state = GSMINITSTAGE_7; } else { GSMM95::state = GSMSTATE_INVALID; } 
 		}
 	
-		if(GSMM95::state == 7)
+		if(GSMM95::state == GSMINITSTAGE_7)
 		{
 		  delay(2000);                                                                                              
-		  Serial.print(F("AT+CREG?\r"));        // Network Registration Report      
+		  Serial.print(F("AT+CREG?\r"));        // Network Registration Report
 		  if(Expect(1000) == 4) 																		
 		   { 
-			 GSMM95::state += 1; 				// get: Registered in home network or roaming
+			 GSMM95::state = GSMINITSTAGE_8; 	// get: Registered in home network or roaming
 		   } 
 		   else 
 		   { 
@@ -146,17 +146,17 @@ int GSMM95::Init(const char* pinCode)
 			  }
 			  else
 			  {
-				GSMM95::state = 1000;			// after 60 sek. (30 x 2000 ms) not registered	
+				GSMM95::state = GSMSTATE_INVALID;// after 60 sek. (30 x 2000 ms) not registered	
 			  } 
 		  } 
 		}
 		  
-		if(GSMM95::state == 8)
+		if(GSMM95::state == GSMINITSTAGE_8)
 		{
 		  return 1;								// Registered successfully ... let's go ahead!
 		}
 	}
-	while(GSMM95::state <= 999);
+	while(GSMM95::state < GSMSTATE_INVALID);
 
 	return 0;			// ERROR ... no Registration in the network
 }
@@ -257,7 +257,7 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
     if(GSMM95::state == 0)
 	{
       Serial.print(F("AT+CREG?\r"));		// Network Registration Report
-      if(Expect(1000) == 4) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need 0,1 or 0,5
+      if(Expect(1000) == 4) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }      // need 0,1 or 0,5
 	}
 
     if(GSMM95::state == 1)					// Judge network?
@@ -276,7 +276,7 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 		  }
 		  else
 		  {
-		    GSMM95::state = 1000;			// after 60 sek. (30 x 2000 ms) not attach	
+		    GSMM95::state = GSMSTATE_INVALID;			// after 60 sek. (30 x 2000 ms) not attach	
 		  } 
       }
 	 } 
@@ -284,7 +284,7 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
     if(GSMM95::state == 2)
     {
       Serial.print(F("AT+QISTAT\r"));                                              // Query current connection status
-      if(Expect(1000) == 8) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need STATE: IP INITIAL 
+      if(Expect(1000) == 8) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }      // need STATE: IP INITIAL 
     }
     
     if(GSMM95::state == 3)
@@ -296,19 +296,19 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 	  Serial.print(F("\",\""));
 	  Serial.print(PWD);
 	  Serial.print(F("\"\r"));
-      if(Expect(1000) == 1) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need OK 
+      if(Expect(1000) == 1) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }      // need OK 
     }
 	 
     if(GSMM95::state == 4)
     {
       Serial.print(F("AT+QIDNSIP=1\r"));                                           // Connect via domain name (not via IP address!)
-      if(Expect(1000) == 1) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need OK 
+      if(Expect(1000) == 1) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }      // need OK 
     }
 	 
     if(GSMM95::state == 5)
     {
       Serial.print(F("AT+QISTAT\r"));                                              // Query current connection status
-      if(Expect(1000) == 8) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need STATE: IP INITIAL, IP STATUS or IP CLOSE
+      if(Expect(1000) == 8) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }      // need STATE: IP INITIAL, IP STATUS or IP CLOSE
     }
 
     if(GSMM95::state == 6)
@@ -317,7 +317,7 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
     }
 
   } 
-  while(GSMM95::state <= 999);
+  while(GSMM95::state < GSMSTATE_INVALID);
   
   return 0;																							  // ERROR ... no GPRS connect
 }
@@ -364,18 +364,18 @@ int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 	  Serial.print('"');
 	  Serial.print(port);
 	  Serial.print('\r');
-      if(Expect(2000) == 1) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need OK
+      if(Expect(2000) == 1) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }      // need OK
     }
 	 
     if(GSMM95::state == 1)
     {
-      if(Expect(20000) == 9) { GSMM95::state += 1; } else { GSMM95::state = 1000; }     // need CONNECT OK or ALREADY CONNECT
+      if(Expect(20000) == 9) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }     // need CONNECT OK or ALREADY CONNECT
     }
 
     if(GSMM95::state == 2)
     {
       Serial.print(F("AT+QISEND\r"));                                              // Send data to the remote server
-      if(Expect(5000) == 5) { GSMM95::state += 1; } else { GSMM95::state = 1000; } 	  // get the prompt ">"
+      if(Expect(5000) == 5) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; } 	  // get the prompt ">"
     }
       
     if(GSMM95::state == 3)
@@ -390,7 +390,7 @@ int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
       Serial.print(F("\r\nUser-Agent: AVEZE"));                                   // Header Field "User-Agent" (MUST be "antrax" when use with portal "WebServices")
       Serial.print(F("\r\nConnection: close\r\n\r\n"));                            // Header Field "Connection"
       Serial.write(26);                                                         // CTRL-Z 
-      if(Expect(20000) == 10) { GSMM95::state += 1; } else { GSMM95::state = 1000; }    // Congratulations ... the parameter_string was send to the server
+      if(Expect(20000) == 10) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }    // Congratulations ... the parameter_string was send to the server
     } 
 
     if(GSMM95::state == 4)
@@ -405,7 +405,7 @@ int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
     }
 
   } 
-  while(GSMM95::state <= 999);
+  while(GSMM95::state < GSMSTATE_INVALID);
   
   return 0;					 // ERROR ... no GPRS connect
 }
@@ -429,10 +429,12 @@ void GSMM95::Disconnect()
     if(GSMM95::state == 0)
     {
       Serial.print(F("AT+QIDEACT\r"));		// Deactivate GPRS context
-      if(Expect(10000) == 1) { GSMM95::state += 1; } else { GSMM95::state = 1000; }
+      // if(Expect(10000) == 1) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }
+      if(Expect(10000) == 1) { break; } else { GSMM95::state = GSMSTATE_INVALID; }
+
     }
   }
-  while(GSMM95::state <= 999);  
+  while(GSMM95::state < GSMSTATE_INVALID);
 }
 
  
