@@ -44,12 +44,12 @@ TinyGPS gps;
 void setup() {
 	// initialize digital pin 13 as an output.
 	pinMode(13, OUTPUT);
-	// allumage de la LED le temps de l'initialisation
+	// allumer la LED le temps de l'initialisation
 	digitalWrite(13, HIGH);
 
 	// Initialisation des lignes serial, i2c
 	consoleSerial.begin(9600);
-	consoleSerial.println("INIT : Begin");
+	consoleSerial.println(F("INIT : Begin"));
 	gpsSerial.begin(9600);
 	Wire.begin();
 
@@ -98,7 +98,7 @@ void loop() {
 	nextGPSRead = millis();
 	
 	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
-	myGSM.SendHttpReq(server, (char*)urlInit);
+	myGSM.SendHttpReq(server, port, (char*)urlInit);
 	myGSM.Disconnect();
 
 	while(1) {
@@ -113,21 +113,23 @@ void loop() {
 
 		// Acquisition GPS
 		if (itsTimeFor(nextGPSRead)) {
-			nextGPSRead = millis() + GPS_READ_DELAY;
-			gpsSerial.listen();
-			gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pend GPS_TIME ms
-			gpsDataIsInvalid = setGpsData(gps, &myGpsData);
+		  nextGPSRead = millis() + GPS_READ_DELAY;
+		  gpsSerial.listen();
+		  gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pend GPS_TIME ms
+		  if(gpsDataIsInvalid = setGpsData(gps, &myGpsData))
+		  {
 #ifdef DEBUG_TO_CONSOLE
-			if (gpsDataIsInvalid)
-			{
-				consoleSerial.println("GPS - Data not valid, last data : ");
-			}
-			else
-			{
-				consoleSerial.println("GPS - Data valid, new data : ");
-			}
+			consoleSerial.println(F("GPS - Data not valid, last data : "));
 			printGpsData(myGpsData, consoleSerial);
 #endif
+		  }
+		  else
+		  {
+#ifdef DEBUG_TO_CONSOLE
+			consoleSerial.println(F("GPS - Data valid, new data : "));
+			printGpsData(myGpsData, consoleSerial);
+#endif
+		  }
 		}
 
 		if (wifiScanEnabled) {
@@ -156,18 +158,18 @@ void loop() {
 					nbAP = wifiScanApGetResult(tabSSIDScan, wifly); // Le scan prend 3s par défaut
 #ifdef DEBUG_TO_CONSOLE
 					if (nbAP > 0) {
-						consoleSerial.print("WIFI - AP trouvées : ");
+						consoleSerial.print(F("WIFI - AP trouvées : "));
 						consoleSerial.println(nbAP);
 						for (int ap=0; ap < nbAP; ap++) {
-							consoleSerial.print("WIFI - SSID : ");
+							consoleSerial.print(F("WIFI - SSID : "));
 							consoleSerial.println(tabSSIDScan[ap].ssid);
-							consoleSerial.print("WIFI - MAC : ");
+							consoleSerial.print(F("WIFI - MAC : "));
 							consoleSerial.println(tabSSIDScan[ap].mac);
-							consoleSerial.print("WIFI - RSSI : ");
+							consoleSerial.print(F("WIFI - RSSI : "));
 							consoleSerial.println(tabSSIDScan[ap].rssi);
 						}
 					}
-					else consoleSerial.println("WIFI - Aucune AP trouvée");
+					else consoleSerial.println(F("WIFI - Aucune AP trouvée"));
 #endif
 				}
 			}

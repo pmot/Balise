@@ -44,82 +44,82 @@ int GSMM95::Init(const char* pinCode)
 		delay(500);
 	}
 
-	GSMM95::state = 0;
+	GSMM95::state = GSMSTATE_UNKNOWN;
 	time = 0;
 	do
 	{
-		if(GSMM95::state == 0)
+		if(GSMM95::state == GSMSTATE_UNKNOWN)
 		{
 			Serial.print(F("AT\r"));     
-			if(Expect(1000) == 1)
+			if(Expect(1000) == GSMSTATE_OK)
 			{
-				GSMM95::state += 1;
+				GSMM95::state += GSMSTATE_NEXT_STAGE;
 			}
 			else
 			{
-				GSMM95::state = 1000;
+				GSMM95::state = GSMSTATE_INVALID;
 			}
 		}
 
-		if(GSMM95::state == 1)
+		if(GSMM95::state == GSMSTATE_OK)
 		{
 			Serial.print(F("ATE0\r"));
-			if(Expect(1000) == 1)
+			if(Expect(1000) == GSMSTATE_OK)
 			{
-				GSMM95::state += 1; 
+				GSMM95::state += GSMSTATE_NEXT_STAGE; 
 			}
 			else
 			{ 
-				GSMM95::state = 1000; 
+				GSMM95::state = GSMSTATE_INVALID; 
 			}
 		}
 	
-		if(GSMM95::state == 2)
+		if(GSMM95::state == GSMSTATE_PIN_REQ)
 		{								// after 0,5 - 10 sec., depends of the SIM card
 			switch (Expect(10000)) 		// wait for initial URC presentation "+CPIN: SIM PIN" or similar
 			{                                                                         
-				case 2:  
-					GSMM95::state += 2; // get +CPIN: SIM PIN
+				case GSMSTATE_PIN_REQ:  
+					GSMM95::state = GSMSTATE_STAGE4; // get +CPIN: SIM PIN
 					break; 													     
 				case 3:  
-					GSMM95::state += 3; // get +CPIN: READY
+					GSMM95::state = GSMSTATE_STAGE5; // get +CPIN: READY
 					break;												           
 				default: 
-					GSMM95::state += 1;
+					GSMM95::state = GSMSTATE_PIN_RDY;
 					break;
 			}
 		}
 	
-		if(GSMM95::state == 3)
+		if(GSMM95::state == GSMSTATE_PIN_RDY)
 		{
 		  switch (Expect(10000)) 		// new try: wait for initial URC presentation "+CPIN: SIM PIN" or similar
 		   {                                                                         
-			 case 2: GSMM95::state += 1; break; 		// get +CPIN: SIM PIN
-			 case 3: GSMM95::state += 2; break;			// get +CPIN: READY
+			 case GSMSTATE_PIN_REQ: GSMM95::state = GSMSTATE_PIN_RDY; break; 		// get +CPIN: SIM PIN
+			 case GSMSTATE_PIN_RDY: GSMM95::state = GSMSTATE_STAGE5; break;			// get +CPIN: READY
 			 default: 
 			 { 
 				  GSMM95::pconsole->print(F("Serious SIM-error: >"));
 				  GSMM95::pconsole->print(GSMM95::gsmBuf);    //    here is the explanation
 			      GSMM95::pconsole->println(F("<"));
-			      while(1);	// ATTENTION: check your SIM!!!! Don't restart the software!!!
+			      return 0;
 			 }  
 			}  
 		}
 	
-		if(GSMM95::state == 4)
+		if(GSMM95::state == GSMSTATE_STAGE4)
 		{
 		  Serial.print(F("AT+CPIN="));           // enter pin (SIM)     
 		  Serial.print(pinCode);
 		  Serial.print('\r');
-		  if(Expect(1000) == 3) { GSMM95::state += 1; } else { GSMM95::state = 1000; } 
+		  if(Expect(1000) == GSMSTATE_PIN_RDY) { GSMM95::state = GSMSTATE_STAGE4; } else { GSMM95::state = GSMSTATE_INVALID; } 
 		}
 	
-		if(GSMM95::state == 5)
+		if(GSMM95::state == GSMSTATE_STAGE5)
 		{
 		  Serial.print(F("AT+IPR="));        // set Baudrate
 		  Serial.print(GSM_BAUDRATE);
 		  Serial.print('\r');
-		  if(Expect(1000) == 1) { GSMM95::state += 1; } else { GSMM95::state = 1000; } 
+		  if(Expect(1000) == GSMSTATE_OK) { GSMM95::state += GSMSTATE_NEXT_STAGE; } else { GSMM95::state = GSMSTATE_INVALID; } 
 		}
 	
 		if(GSMM95::state == 6)
@@ -255,28 +255,28 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
   do
   {
     if(GSMM95::state == 0)
-	 {
-      Serial.print(F("AT+CREG?\r"));      // Network Registration Report
+	{
+      Serial.print(F("AT+CREG?\r"));		// Network Registration Report
       if(Expect(1000) == 4) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need 0,1 or 0,5
-	 }
+	}
 
-    if(GSMM95::state == 1)							// Judge network?
+    if(GSMM95::state == 1)					// Judge network?
     {
       Serial.print(F("AT+CGATT?\r"));		// attach to GPRS service?      
       if(Expect(1000) == 7) 				// need +CGATT: 1			
 	   { 
-	     GSMM95::state += 1; 						// get: attach
+	     GSMM95::state += 1; 				// get: attach
 	   } 
 	   else 
 	   { 
 	     delay(2000);
 		  if(time++ < 30)																		  	   
 		  {
-		    GSMM95::state = GSMM95::state;					// stay in this state until timeout
+		    GSMM95::state = GSMM95::state;	// stay in this state until timeout
 		  }
 		  else
 		  {
-		    GSMM95::state = 1000;																		     // after 60 sek. (30 x 2000 ms) not attach	
+		    GSMM95::state = 1000;			// after 60 sek. (30 x 2000 ms) not attach	
 		  } 
       }
 	 } 
@@ -350,7 +350,7 @@ Return value = 0 ---> Error occured
 Return value = 1 ---> OK
 The public variable "gsmBuf" contains the last response from the mobile module
 */
-int GSMM95::SendHttpReq(const char* server, char* parameter)
+int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 {
   int time = 0;
   
@@ -361,7 +361,9 @@ int GSMM95::SendHttpReq(const char* server, char* parameter)
     {
       Serial.print(F("AT+QIOPEN=\"TCP\",\""));		    								     // Start up TCP connection
       Serial.print(server);
-	  Serial.print(F("\",80\r"));
+	  Serial.print('"');
+	  Serial.print(port);
+	  Serial.print('\r');
       if(Expect(2000) == 1) { GSMM95::state += 1; } else { GSMM95::state = 1000; }      // need OK
     }
 	 
@@ -483,22 +485,13 @@ int GSMM95::Expect(int timeout)
   }
 
   //----- analyse the reaction of the mobile module
-  if(strstr(gsmBuf, "OK\r\n"))					{ return 1; }
-  if(strstr(gsmBuf, "SIM PIN\r\n"))	      		{ return 2; }
-  if(strstr(gsmBuf, "READY\r\n"))		    	{ return 3; }
-  if(strstr(gsmBuf, "0,1\r\n"))					{ return 4; }
-  if(strstr(gsmBuf, "0,5\r\n"))					{ return 4; }
-  if(strstr(gsmBuf, "NO CARRIER\r\n"))			{ return 6; }
-  if(strstr(gsmBuf, "+CGATT: 1\r\n"))			{ return 7; }
-  if(strstr(gsmBuf, "IP INITIAL\r\n"))			{ return 8; }
-  if(strstr(gsmBuf, "IP STATUS\r\n"))			{ return 8; }
-  if(strstr(gsmBuf, "IP CLOSE\r\n"))			{ return 8; }
-  if(strstr(gsmBuf, "CONNECT OK\r\n"))			{ return 9; }
-  if(strstr(gsmBuf, "ALREADY CONNECT\r\n"))		{ return 9; }
-  if(strstr(gsmBuf, "SEND OK\r\n"))				{ return 10; }
-  if(strstr(gsmBuf, "+CPMS:"))				   	{ return 13; }
-  if(strstr(gsmBuf, "OK\r\n\r\nCONNECT\r\n"))	{ return 14; }
-  if(strstr(gsmBuf, ":0\r\n"))		    	    { return 17; }
+  for (byte i=0; i < MAX_GSM_STRINGS; i++)
+  {
+	if(strstr(gsmBuf, gsmStrings[i]))
+	{
+	  return i+1;
+	}
+  }
 
   return 0;
 }        

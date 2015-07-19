@@ -22,6 +22,7 @@ static const char gprsPassword[] PROGMEM = "";
 static const char pinCode[] PROGMEM = "1234";
 // Serveur
 static const char server[] PROGMEM = "geolocsp.com";
+static const char port[] PROGMEM = "80";
 static const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
 static const char urlWS[] PROGMEM = "POST /webservice/ws";
 
