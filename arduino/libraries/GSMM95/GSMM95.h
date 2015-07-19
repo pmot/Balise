@@ -3,26 +3,33 @@
   
 #include <Arduino.h>
 
-#define GSM_BUFSZ		150
-// const static char ATCREG[] PROGMEM = "AT+CREG?\r";
+#define GSM_BUFSZ		150		// Taille du buffer circulaire
+#define GSM_BAUDRATE	115200
+#define GSM_PWRK		12		// TODO : à remplacer
+
+static const char gsmStrings[][10] PROGMEM =
+{
+	"TOTO",
+	"TATA",
+	"TITI"
+};
 
 class GSMM95
-{     
-    public:
-
-      char gsmBuf[GSM_BUFSZ];
+{
+    public:      
+      GSMM95();			// Constructeur, baudrate
+	  int  Init(const char*);
+	  int Status();
       
-      //GSMM95(); // Constructeur
-	  void begin();		// Redondance de méthodes d'INIT...
-	  int  init(char*);
-	  int  Status();
-      
-      int  dataConnect(const char*, char*, char*);
-      int  sendHttpReq(char*, char*);
-      void dataDisconnect();
+      int  Connect(const char*, const char*, const char*);
+      int  SendHttpReq(const char*, char*);
+      void Disconnect();
     
     private:
-      int  expect(int);
+	  char gsmBuf[GSM_BUFSZ];
+	  
+      int  Expect(int);
+      byte Automate(char);
 };
 
 #endif

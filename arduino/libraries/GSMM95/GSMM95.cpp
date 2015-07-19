@@ -3,15 +3,11 @@
 int state = 0;
 
 
-// GSMM95::GSMM95()
-// {
-	// What to put there ?
-//}
-
-void GSMM95::begin()
+GSMM95::GSMM95()
 {
-	// pinMode(GSM_PWRK, OUTPUT);
+  pinMode(GSM_PWRK, OUTPUT);
 }
+
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------
 Initialisation of the GSM-easy! - Shield:
@@ -24,11 +20,11 @@ Return value = 0 ---> Error occured
 Return value = 1 ---> OK
 The public variable "gsmBuf" contains the last response from the mobile module
 */
-int GSMM95::init(char simpin[4])
+int GSMM95::Init(const char* pinCode)
 {
 	int time;
 
-	Serial.begin(9600);																// 9600 Baud data rate
+	Serial.begin(GSM_BAUDRATE);																// 9600 Baud data rate
 
 	// digitalWrite(GSM_ON, HIGH);														// GSM_ON = HIGH --> switch on + Serial Line enable
 
@@ -56,7 +52,7 @@ int GSMM95::init(char simpin[4])
 	if(state == 0)
 	{
 		Serial.print(F("AT\r"));                                                     	// send the first "AT"      
-		if(expect(1000) == 1) 
+		if(Expect(1000) == 1) 
 		{ 
 			state += 1; 
 		} 
@@ -69,7 +65,7 @@ int GSMM95::init(char simpin[4])
 	if(state == 1)
 	{
 		Serial.print(F("ATE0\r"));                                                   	// disable Echo   
-		if(expect(1000) == 1) 
+		if(Expect(1000) == 1) 
 		{ 
 			state += 1; 
 		} 
@@ -81,7 +77,7 @@ int GSMM95::init(char simpin[4])
 
 	if(state == 2)
 	{																				// after 0,5 - 10 sec., depends of the SIM card
-		switch (expect(10000)) 												// wait for initial URC presentation "+CPIN: SIM PIN" or similar
+		switch (Expect(10000)) 												// wait for initial URC presentation "+CPIN: SIM PIN" or similar
 		{                                                                         
 			case 2:  
 				state += 2; 														// get +CPIN: SIM PIN
@@ -97,7 +93,7 @@ int GSMM95::init(char simpin[4])
 
 	if(state == 3)
 	{
-	  switch (expect(10000)) 		// new try: wait for initial URC presentation "+CPIN: SIM PIN" or similar
+	  switch (Expect(10000)) 		// new try: wait for initial URC presentation "+CPIN: SIM PIN" or similar
 	   {                                                                         
 		 case 2: state += 1; break; 		// get +CPIN: SIM PIN
 		 case 3: state += 2; break;			// get +CPIN: READY
@@ -114,29 +110,29 @@ int GSMM95::init(char simpin[4])
 	if(state == 4)
 	{
 	  Serial.print(F("AT+CPIN="));           // enter pin (SIM)     
-	  Serial.print(simpin);
+	  Serial.print(pinCode);
 	  Serial.print('\r');
-	  if(expect(1000) == 3) { state += 1; } else { state = 1000; } 
+	  if(Expect(1000) == 3) { state += 1; } else { state = 1000; } 
 	}
 
 	if(state == 5)
 	{
 	  Serial.print(F("AT+IPR=9600\r"));        // set Baudrate
-	  if(expect(1000) == 1) { state += 1; } else { state = 1000; } 
+	  if(Expect(1000) == 1) { state += 1; } else { state = 1000; } 
 	}
 
 	if(state == 6)
 	{
 		Serial.print(F("AT+QIURC=0\r"));       // disable initial URC presentation   
 		time = 0;  
-		if(expect(1000) == 1) { state += 1; } else { state = 1000; } 
+		if(Expect(1000) == 1) { state += 1; } else { state = 1000; } 
 	}
 
 	if(state == 7)
 	{
 	  delay(2000);                                                                                              
 	  Serial.print(F("AT+CREG?\r"));           // Network Registration Report      
-	  if(expect(1000) == 4) 																		
+	  if(Expect(1000) == 4) 																		
 	   { 
 		 state += 1; 						// get: Registered in home network or roaming
 	   } 
@@ -187,7 +183,7 @@ int GSMM95::Status()
     if(state == 0)
     {
       Serial.print(F("AT+CREG?\r"));                                               // Query register state of GSM network
-      expect(1000);
+      Expect(1000);
 		strcpy(Status_string, gsmBuf);
 		state += 1; 
 	 }
@@ -195,7 +191,7 @@ int GSMM95::Status()
     if(state == 1)
     {
       Serial.print(F("AT+CGREG?\r"));                                              // Query register state of GPRS network
-      expect(1000);
+      Expect(1000);
 		strcat(Status_string, gsmBuf);
 		state += 1; 
 	 }
@@ -203,7 +199,7 @@ int GSMM95::Status()
     if(state == 2)
     {
       Serial.print(F("AT+CSQ\r"));                                                 // Query the RF signal strength
-      expect(1000);
+      Expect(1000);
 		strcat(Status_string, gsmBuf);
 		state += 1; 
 	 }
@@ -211,7 +207,7 @@ int GSMM95::Status()
     if(state == 3)
     {
       Serial.print(F("AT+COPS?\r"));                                               // Query the current selected operator
-      expect(1000);
+      Expect(1000);
 		strcat(Status_string, gsmBuf);
 		state += 1; 
 	 }
@@ -250,7 +246,7 @@ Return value  = 0 ---> Error occured
 Return value = 1 ---> OK
 The public variable "gsmBuf" contains the last response from the mobile module
 */
-int GSMM95::dataConnect(const char* APN, char USER[30], char PWD[50])
+int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 {
   int time = 0;
   
@@ -260,13 +256,13 @@ int GSMM95::dataConnect(const char* APN, char USER[30], char PWD[50])
     if(state == 0)
 	 {
       Serial.print(F("AT+CREG?\r"));                                               // Network Registration Report
-      if(expect(1000) == 4) { state += 1; } else { state = 1000; }      // need 0,1 or 0,5
+      if(Expect(1000) == 4) { state += 1; } else { state = 1000; }      // need 0,1 or 0,5
 	 }
 
     if(state == 1)                                                              // Judge network?
     {
       Serial.print(F("AT+CGATT?\r"));                                              // attach to GPRS service?      
-      if(expect(1000) == 7) 														  // need +CGATT: 1			
+      if(Expect(1000) == 7) 														  // need +CGATT: 1			
 	   { 
 	     state += 1; 																			     // get: attach
 	   } 
@@ -287,7 +283,7 @@ int GSMM95::dataConnect(const char* APN, char USER[30], char PWD[50])
     if(state == 2)
     {
       Serial.print(F("AT+QISTAT\r"));                                              // Query current connection status
-      if(expect(1000) == 8) { state += 1; } else { state = 1000; }      // need STATE: IP INITIAL 
+      if(Expect(1000) == 8) { state += 1; } else { state = 1000; }      // need STATE: IP INITIAL 
     }
     
     if(state == 3)
@@ -299,19 +295,19 @@ int GSMM95::dataConnect(const char* APN, char USER[30], char PWD[50])
 		Serial.print(F("\",\""));
 		Serial.print(PWD);
 		Serial.print(F("\"\r"));
-      if(expect(1000) == 1) { state += 1; } else { state = 1000; }      // need OK 
+      if(Expect(1000) == 1) { state += 1; } else { state = 1000; }      // need OK 
     }
 	 
     if(state == 4)
     {
       Serial.print(F("AT+QIDNSIP=1\r"));                                           // Connect via domain name (not via IP address!)
-      if(expect(1000) == 1) { state += 1; } else { state = 1000; }      // need OK 
+      if(Expect(1000) == 1) { state += 1; } else { state = 1000; }      // need OK 
     }
 	 
     if(state == 5)
     {
       Serial.print(F("AT+QISTAT\r"));                                              // Query current connection status
-      if(expect(1000) == 8) { state += 1; } else { state = 1000; }      // need STATE: IP INITIAL, IP STATUS or IP CLOSE
+      if(Expect(1000) == 8) { state += 1; } else { state = 1000; }      // need STATE: IP INITIAL, IP STATUS or IP CLOSE
     }
 
     if(state == 6)
@@ -353,7 +349,7 @@ Return value = 0 ---> Error occured
 Return value = 1 ---> OK
 The public variable "gsmBuf" contains the last response from the mobile module
 */
-int GSMM95::sendHttpReq(char server[50], char parameter[200])
+int GSMM95::SendHttpReq(const char* server, char parameter[200])
 {
   int time = 0;
   
@@ -365,18 +361,18 @@ int GSMM95::sendHttpReq(char server[50], char parameter[200])
       Serial.print(F("AT+QIOPEN=\"TCP\",\""));		    								     // Start up TCP connection
       Serial.print(server);
 		Serial.print(F("\",80\r"));
-      if(expect(2000) == 1) { state += 1; } else { state = 1000; }      // need OK
+      if(Expect(2000) == 1) { state += 1; } else { state = 1000; }      // need OK
     }
 	 
     if(state == 1)
     {
-      if(expect(20000) == 9) { state += 1; } else { state = 1000; }     // need CONNECT OK or ALREADY CONNECT
+      if(Expect(20000) == 9) { state += 1; } else { state = 1000; }     // need CONNECT OK or ALREADY CONNECT
     }
 
     if(state == 2)
     {
       Serial.print(F("AT+QISEND\r"));                                              // Send data to the remote server
-      if(expect(5000) == 5) { state += 1; } else { state = 1000; } 	  // get the prompt ">"
+      if(Expect(5000) == 5) { state += 1; } else { state = 1000; } 	  // get the prompt ">"
     }
       
     if(state == 3)
@@ -392,12 +388,12 @@ int GSMM95::sendHttpReq(char server[50], char parameter[200])
       Serial.print(F("\r\nUser-Agent: Balise"));                                   // Header Field "User-Agent" (MUST be "antrax" when use with portal "WebServices")
       Serial.print(F("\r\nConnection: close\r\n\r\n"));                            // Header Field "Connection"
       Serial.write(26);                                                         // CTRL-Z 
-      if(expect(20000) == 10) { state += 1; } else { state = 1000; }    // Congratulations ... the parameter_string was send to the server
+      if(Expect(20000) == 10) { state += 1; } else { state = 1000; }    // Congratulations ... the parameter_string was send to the server
     } 
 
     if(state == 4)
     {
-      expect(5000);                                                     // wait of ack from remote server
+      Expect(5000);                                                     // wait of ack from remote server
 		state += 1;
     }
 	 
@@ -423,7 +419,7 @@ ATTENTION: The frequent disconnection and rebuilding of GPRS connections can lea
 No return value 
 The public variable "gsmBuf" contains the last response from the mobile module
 */
-void GSMM95::dataDisconnect()
+void GSMM95::Disconnect()
 {
   state = 0;
   do
@@ -431,7 +427,7 @@ void GSMM95::dataDisconnect()
     if(state == 0)
     {
       Serial.print(F("AT+QIDEACT\r"));                                             // Deactivate GPRS context
-      if(expect(10000) == 1) { state += 1; } else { state = 1000; }     // ein OK wäre schön ...
+      if(Expect(10000) == 1) { state += 1; } else { state = 1000; }     // ein OK wäre schön ...
     }
   }
   while(state <= 999);  
@@ -460,7 +456,7 @@ Return value = 0      ---> No known response of the mobile module detected
 Rückgabewert = 1 - 18 ---> Response detected (see below)
 The public variable "gsmBuf" contains the last response from the mobile module
 */
-int GSMM95::expect(int timeout)
+int GSMM95::Expect(int timeout)
 {
   int  index = 0;
   int  inByte = 0;

@@ -18,10 +18,10 @@
 // Code PIN
 #define GSM_PIN			""
 // APN
-// #define GPRS_APN		"websfr"
-#define GPRS_LOGIN		""
-#define GPRS_PASSWORD	""
-const static char apnName[] PROGMEM = "websfr";
+static const char gprsAPN[] PROGMEM = "websfr";
+static const char gprsLogin[] PROGMEM = "";
+static const char gprsPassword[] PROGMEM = "";
+static const char pinCode[] PROGMEM = "1234";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms

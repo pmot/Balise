@@ -60,8 +60,7 @@ void setup() {
 	accelerometerSetup(lis);
 
 	// GSM
-	myGSM.begin();
-	myGSM.init("toto");
+	myGSM.Init(pinCode);
 	
 	// extinction de la LED à la fin de l'initialisation
 	// on pourrait la faire clignoter en cas d'erreur durant cette phase
@@ -69,13 +68,6 @@ void setup() {
 	delay(3000);
 
 	// setup wifiScan
-<<<<<<< HEAD
-	if (wifiScanSetup(wifly))
-		consoleSerial.println("WIFI SCAN SETUP : OK");
-	else {
-		consoleSerial.println("WIFI SCAN SETUP : NOT OK");
-		wifiScanEnabled = false;
-=======
 	if (wifiScanEnabled=wifiScanSetup(wifly))
 	{
 		consoleSerial.println(F("WIFI SCAN SETUP : OK"));
@@ -83,7 +75,6 @@ void setup() {
 	else
 	{
 		consoleSerial.println(F("WIFI SCAN SETUP : NOT OK"));
->>>>>>> 30559aef0eb17bf448ef75eba8ba2b17532352a2
 	}
 	consoleSerial.println(F("INIT : Done"));
 }
@@ -105,8 +96,8 @@ void loop() {
 	nextWifiScanRes = 0;
 	nextGPSRead = millis();
 	
-	myGSM.dataConnect(apnName, GPRS_LOGIN, GPRS_PASSWORD);
-	myGSM.sendHttpReq("monserveur.fr", "balise");
+	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
+	myGSM.SendHttpReq("monserveur.fr", "balise");
 
 	while(1) {
 
@@ -182,22 +173,6 @@ void loop() {
 	}
 }
 
-<<<<<<< HEAD
-void movment() {
-	sei();
-	int16_t y;
-	lis.getYValue(&y);
-	cli();
-#ifdef DEBUG_TO_CONSOLE
-	consoleSerial.print("ACCEL (INTR) - Axe Y : ");
-	consoleSerial.print(y);
-	consoleSerial.println(" milli Gs");
-#endif
-}
-
-bool itsTimeFor(unsigned long ts) {
-=======
 static bool itsTimeFor(unsigned long ts) {
->>>>>>> 30559aef0eb17bf448ef75eba8ba2b17532352a2
 	return (millis() >= ts);
 }
