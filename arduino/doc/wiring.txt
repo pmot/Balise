@@ -34,6 +34,8 @@ Pin 11 : Tx carte
 Pin 12 : Rx carte
 Initialisation: SoftwareSerial consoleSerial(12, 11)
 
+
+
 Câble USB
 =========
 Noir : Masse
@@ -44,12 +46,13 @@ Connecteur externe
 ===================
 1 - Tx Console
 2 - Rx Console
-3 - Tx upgrade
-4 - Rx upgrade
+3 - Tx upgrade (cable blanc)
+4 - Rx upgrade (cable marron)
 5 - Bat +
 6 - Masse
 7 - 3,3 v (sortie venant de la carte ) ... je sais pas pourquoi ....
 8 - RTS
+9 - 5v venant du cable USB pour activation du relais flash / GSM (cable vert)
 
 /!\ Les Tx et Rx sont vus coté arduino
 
@@ -67,6 +70,8 @@ NC						NC
 GND						GND
 
 La carte est connectée sur l'UART0.
+
+La pin 10 de la carte arduino est réservée pour le PMWKEY (init de la carte )
 
 *******************
 ATTENTION ATTENTION
