@@ -51,7 +51,7 @@ void setup() {
 	// Initialisation des lignes serial, i2c
 	consoleSerial.begin(9600);
 	consoleSerial.println(F("INIT : Begin"));
-#idef DEV_MODE
+#ifdef DEV_MODE
 	consoleSerial.println(F("DEV MODE, vous avez 10s pour lancer un téléversement"));
 	delay(10000);
 #endif
