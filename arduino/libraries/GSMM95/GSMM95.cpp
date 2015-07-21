@@ -22,7 +22,7 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 int GSMM95::Init(const char* pinCode)
 {
-	int time;
+	int time = millis();	// On donne un temps limité à l'init
 
 	// Init sequence, see "M95_HardwareDesign_V1.2.pdf", page 30.
 	// Reset!
@@ -158,6 +158,7 @@ int GSMM95::Init(const char* pinCode)
 		  return 1;								// Registered successfully ... let's go ahead!
 		}
 		delay(500);								// Easy...
+		if ((millis() - time) > 120000) return 0; // On sort au bout de 2 minutes
 	}
 	while(GSMM95::state < GSMSTATE_INVALID);
 
