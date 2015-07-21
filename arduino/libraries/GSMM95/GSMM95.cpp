@@ -157,6 +157,7 @@ int GSMM95::Init(const char* pinCode)
 		{
 		  return 1;								// Registered successfully ... let's go ahead!
 		}
+		delay(500);								// Easy...
 	}
 	while(GSMM95::state < GSMSTATE_INVALID);
 
