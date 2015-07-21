@@ -86,8 +86,10 @@ void loop() {
 	unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
 	unsigned long nextWifiScanRes;	// timestamp de la lecture du scan WIFI en cours
 	unsigned long nextGPSRead;		// timestamp de la prochaine lecture des coordonnées GPS
+#ifdef ORD_RT
 	unsigned long tickRef;			// timestamp de boucle, sert à calculer les autres timestamps
-	unsigned long counter=0;		// pour recaler (à définir, peut être un int...)
+	unsigned long counter=0;		// pour recaler les tâches (à définir, peut être un int)
+#endif
 	int16_t y;	// Accélération en mg selon l'axe y
 
 	struct gpsData myGpsData;
@@ -104,8 +106,16 @@ void loop() {
 
 	// Main loop
 	while(1) {
-		// Init de la référence
-		
+#ifdef ORD_RT
+		// Init de la référence de temps de l'élection d'une tâche.
+		// Le calcul de la prochaine éléction d'une tâche est déléguée à la tâche
+		// Implique : si la durée de l'ensemble des tâches est supérieure au délai
+		// le plus court entre deux éléctions d'une tâche, alors une élection pour
+		// cette sera reportée d'un cycle.
+		tickRef = millis();
+		if (counter > 1000) counter = 0;
+		else counter++;
+#endif
 
 		// La lecture de l'accéléromètre est prioritaire
 		lis.getYValue(&y);
@@ -117,9 +127,13 @@ void loop() {
 
 		// Acquisition GPS
 		if (itsTimeFor(nextGPSRead)) {
+#ifdef ORD_RT
+		  nextGPSRead = tickRef + GPS_READ_DELAY;
+#else
 		  nextGPSRead = millis() + GPS_READ_DELAY;
+#endif
 		  gpsSerial.listen();
-		  gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pend GPS_TIME ms
+		  gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pendant GPS_TIME ms
 		  if(gpsDataIsInvalid = setGpsData(gps, &myGpsData))
 		  {
 #ifdef DEBUG_TO_CONSOLE
@@ -141,12 +155,20 @@ void loop() {
 			// sans attendre le résultat
 			if ( nextWifiScanRes == 0 && itsTimeFor(nextWifiScan)) {
 				// Programmation du prochain scan
+#ifdef ORD_RT
+				nextWifiScan = tickRef + WIFI_SCAN_DELAY;
+#else
 				nextWifiScan = millis() + WIFI_SCAN_DELAY;
+#endif
 				// Scan !
 				if (wifiScanAp(wifly)) {
 					// Si la commande scan réussi, programmation de la lecture du résultat
 					// au bout WIFI_SCAN_TIME ms
+#ifdef ORD_RT
+					nextWifiScanRes = tickRef + WIFI_SCAN_TIME;
+#else
 					nextWifiScanRes = millis() + WIFI_SCAN_TIME;
+#endif
 				}
 				// Si la commande échoue, pas de programmation de la lecture du résultat
 				else

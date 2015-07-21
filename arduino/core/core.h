@@ -4,6 +4,11 @@
 // Identifiant de la balise
 #define	BALISE_ID	"AVEZE"
 
+
+// Mode d'élection des tâches (exclusif)
+// #define ORD_PREEMPT	// Privilégier l'exécution d'une tâche, par défaut
+#define ORD_RT			// Privilégier la régularité
+
 // Définition des pin RX/TX des modules
 // #define GSM_TX	 0	// UART
 // #define GSM_RX	 1	// " "
