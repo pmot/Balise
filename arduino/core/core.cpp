@@ -86,22 +86,26 @@ void loop() {
 	unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
 	unsigned long nextWifiScanRes;	// timestamp de la lecture du scan WIFI en cours
 	unsigned long nextGPSRead;		// timestamp de la prochaine lecture des coordonnées GPS
-
+	unsigned long tickRef;			// timestamp de boucle, sert à calculer les autres timestamps
+	unsigned long counter=0;		// pour recaler (à définir, peut être un int...)
 	int16_t y;	// Accélération en mg selon l'axe y
 
 	struct gpsData myGpsData;
 	bool gpsDataIsInvalid = true;
 	gpsSetup(&myGpsData);
 
-	nextWifiScan = millis();
-	nextWifiScanRes = 0;
-	nextGPSRead = millis();
+	nextWifiScan = millis();		// Doit avoir lieu un jour
+	nextWifiScanRes = 0;			// A la première itération on n'attend pas de résultat de scan
+	nextGPSRead = millis();			// Doit avoir lieu un jour
 	
 	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
 	myGSM.SendHttpReq(server, port, (char*)urlInit);
 	myGSM.Disconnect();
 
+	// Main loop
 	while(1) {
+		// Init de la référence
+		
 
 		// La lecture de l'accéléromètre est prioritaire
 		lis.getYValue(&y);
@@ -174,7 +178,8 @@ void loop() {
 				}
 			}
 		} // wifiScanEnabled
-	}
+		
+	} // End while (Main loop)
 }
 
 static bool itsTimeFor(unsigned long ts) {

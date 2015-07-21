@@ -2,7 +2,7 @@
 #define __GSMM95_H__
   
 #include <Arduino.h>
-#include <SoftwareSerial.h>
+#include <SoftwareSerial.h>		// Pour debugger sur la console
 
 #define GSM_BUFSZ		150		// Taille du buffer (circulaire ?)
 #define GSM_BAUDRATE	115200
