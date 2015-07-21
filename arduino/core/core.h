@@ -16,15 +16,15 @@
 // GSM
 #define GSM_PWRK	10
 // APN
-static const char gprsAPN[] PROGMEM = "websfr";
-static const char gprsLogin[] PROGMEM = "";
-static const char gprsPassword[] PROGMEM = "";
-static const char pinCode[] PROGMEM = "1234";
+const char gprsAPN[] PROGMEM = "websfr";
+const char gprsLogin[] PROGMEM = "";
+const char gprsPassword[] PROGMEM = "";
+const char pinCode[] PROGMEM = "1234";
 // Serveur
-static const char server[] PROGMEM = "geolocsp.com";
-static const char port[] PROGMEM = "80";
-static const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
-static const char urlWS[] PROGMEM = "POST /webservice/ws";
+const char server[] PROGMEM = "geolocsp.com";
+const char port[] PROGMEM = "80";
+const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
+const char urlWS[] PROGMEM = "POST /webservice/ws";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
