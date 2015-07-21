@@ -2,6 +2,7 @@
 
 #define DEBUG_ACCEL_TO_CONSOLE
 #define DEBUG_TO_CONSOLE
+#define DEV_MODE
 
 #include <avr/pgmspace.h>
 #include <Arduino.h>
@@ -50,6 +51,10 @@ void setup() {
 	// Initialisation des lignes serial, i2c
 	consoleSerial.begin(9600);
 	consoleSerial.println(F("INIT : Begin"));
+#idef DEV_MODE
+	consoleSerial.println(F("DEV MODE, vous avez 10s pour lancer un téléversement"));
+	delay(10000);
+#endif
 	gpsSerial.begin(9600);
 	Wire.begin();
 
