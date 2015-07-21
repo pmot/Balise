@@ -1,3 +1,9 @@
 Pour développer sur l'avr, quelques trucs pour l'optimisation :
 
 http://www.atmel.com/images/doc8453.pdf
+
+En période de développement
+---------------------------
+Pour ajouter un délai au moment du démarrage et se laisser le temps d'un téléversement salvateur :
+
+#define DEV_MODE
