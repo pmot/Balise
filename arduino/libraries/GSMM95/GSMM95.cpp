@@ -76,9 +76,10 @@ int GSMM95::Init(const char* pinCode)
 	
 		if(GSMM95::state == GSMINIT_STATE_ECHO_DISABLED)
 		{								// after 0,5 - 10 sec., depends of the SIM card
+			Serial.print(F("AT+CPIN?\r"));
 			switch (Expect(10000)) 		// wait for initial URC presentation "+CPIN: SIM PIN" or similar
 			{                                                                         
-				case GSMSTATE_PIN_REQ:  
+				case GSMSTATE_PIN_REQ:
 					GSMM95::state = GSMINIT_STATE_PIN_REQUIRED; // get +CPIN: SIM PIN
 					break; 													     
 				case 3:  
