@@ -133,7 +133,6 @@ int GSMM95::Init(const char* pinCode)
 		{
 		  delay(2000);                                                                                              
 		  Serial.print(F("AT+CREG?\r"));        // Network Registration Report
-		  // GDTREM : A revoir !!!!
 		  int ret_reg = Expect(1000);
 		  if ((ret_reg == GSMSTATE_NET_REG_2G) || (ret_reg == GSMSTATE_NET_REG_3G))																	
 		   { 
@@ -157,8 +156,10 @@ int GSMM95::Init(const char* pinCode)
 		{
 		  return 1;								// Registered successfully ... let's go ahead!
 		}
-		delay(500);								// Easy...
+		GSMM95::pconsole->print(F("GSM - INIT : "));
+		GSMM95::pconsole->println(GSMM95::state);
 		if ((millis() - time) > 120000) return 0; // On sort au bout de 2 minutes
+		delay(500);		delay(500);								// Easy...
 	}
 	while(GSMM95::state < GSMSTATE_INVALID);
 
@@ -261,7 +262,6 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
     if(GSMM95::state == GSMCONNECT_STATE_START)
 	{
       Serial.print(F("AT+CREG?\r"));		// Network Registration Report
-	  // GDTREM : A revoir !!!!
 	  int ret_reg = Expect(1000);
 	  if ((ret_reg == GSMSTATE_NET_REG_2G) || (ret_reg == GSMSTATE_NET_REG_3G))
 	  {
@@ -275,9 +275,9 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
     if(GSMM95::state == GSMCONNECT_STATE_REGISTERED)					// Judge network?
     {
       Serial.print(F("AT+CGATT?\r"));		// attach to GPRS service?      
-      if(Expect(1000) == GSMSTATE_GPRS_REGISTERED) 				// need +CGATT: 1			
+      if(Expect(1000) == GSMSTATE_GPRS_ATTACHED) 				// need +CGATT: 1			
 	   { 
-	     GSMM95::state = GSMCONNECT_STATE_GPRS_REGISTERED; 				// get: attach
+	     GSMM95::state = GSMCONNECT_STATE_GPRS_ATTACHED; 				// get: attach
 	   } 
 	   else 
 	   { 
@@ -293,7 +293,7 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
       }
 	 } 
 
-    if(GSMM95::state == GSMCONNECT_STATE_GPRS_REGISTERED)
+    if(GSMM95::state == GSMCONNECT_STATE_GPRS_ATTACHED)
     {
       Serial.print(F("AT+QISTAT\r"));                                              // Query current connection status
       if(Expect(1000) == 8) { GSMM95::state = GSMCONNECT_STATE_IP_INITIAL; } else { GSMM95::state = GSMSTATE_INVALID; }      // need STATE: IP INITIAL 
@@ -327,8 +327,10 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
     {
       return 1;																					  // GPRS connect successfully ... let's go ahead!
     }
-	delay(500);
+    GSMM95::pconsole->print(F("GSM - CONNECT : "));
+    GSMM95::pconsole->println(GSMM95::state);
 	if ((millis() - time) > 120000) return 0; // On sort au bout de 2 minutes
+	delay(500);
   } 
   while(GSMM95::state < GSMSTATE_INVALID);
   
