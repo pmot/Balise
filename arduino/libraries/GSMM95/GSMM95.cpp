@@ -82,7 +82,7 @@ int GSMM95::Init(const char* pinCode)
 				case GSMSTATE_PIN_REQ:
 					GSMM95::state = GSMINIT_STATE_PIN_REQUIRED; // get +CPIN: SIM PIN
 					break; 													     
-				case 3:  
+				case GSMSTATE_PIN_RDY:  
 					GSMM95::state = GSMINIT_STATE_SIM_OK; // get +CPIN: READY
 					break;												           
 				default: 
