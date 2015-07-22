@@ -16,28 +16,30 @@
 #define GSMSTATE_NET_REG_2G	4
 #define GSMSTATE_NET_REG_3G	5
 
+#define GSMSTATE_GPRS_REGISTERED	7
+
 // Automate initialisation
-#define GSMINIT_STAGE_START						0
-#define	GSMINIT_STAGE_MODEM_OK					1
-#define GSMINIT_STAGE_ECHO_DISABLED				2	// 2 cas, pas code, un code, sinon, seconde chance
-#define GSMINIT_STAGE_SIM_STATUS_SECOND_CHANCE	3	// Si la SIM n'a pas eu le temps de s'éveiller
-#define GSMINIT_STAGE_PIN_REQUIRED				4
-#define GSMINIT_STAGE_SIM_OK					5
-#define GSMINIT_STAGE_BAUDRATE_FIXED			6
-#define GSMINIT_STAGE_URC_DISABLED				7
-#define GSMINIT_STAGE_REGISTERED				8
+#define GSMINIT_STATE_START						100
+#define	GSMINIT_STATE_MODEM_OK					101
+#define GSMINIT_STATE_ECHO_DISABLED				102	// 2 cas, pas code, un code, sinon, seconde chance
+#define GSMINIT_STATE_SIM_STATUS_SECOND_CHANCE	103	// Si la SIM n'a pas eu le temps de s'éveiller
+#define GSMINIT_STATE_PIN_REQUIRED				104
+#define GSMINIT_STATE_SIM_OK					105
+#define GSMINIT_STATE_BAUDRATE_FIXED			106
+#define GSMINIT_STATE_URC_DISABLED				107
+#define GSMINIT_STATE_REGISTERED				108
 
 // Automate connexion
-#define GSMCONNECT_STAGE_START	0
-#define	GSMCONNECT_STAGE_1		1
-#define GSMCONNECT_STAGE_2		2
-#define GSMCONNECT_STAGE_3		3
-#define GSMCONNECT_STAGE_4		4
-#define GSMCONNECT_STAGE_5		5
-#define GSMCONNECT_STAGE_DONE	6
+#define GSMCONNECT_STATE_START					200
+#define	GSMCONNECT_STATE_REGISTERED				201
+#define GSMCONNECT_STATE_GPRS_REGISTERED		202
+#define GSMCONNECT_STATE_IP_INITIAL				203
+#define GSMCONNECT_STATE_APN_SET				204
+#define GSMCONNECT_STATE_DOMAIN_SET				205
+#define GSMCONNECT_STATE_DONE	206
 
 #define MAX_GSM_STRINGS	16
-static const char gsmStrings[16][20] PROGMEM =
+static const char gsmStrings[MAX_GSM_STRINGS][20] PROGMEM =
 {
 	"OK\r\n",					// 1
 	"SIM PIN\r\n",				// Etc

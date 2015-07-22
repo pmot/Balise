@@ -118,7 +118,7 @@ void loop() {
 		// le plus court entre deux éléctions d'une tâche, alors une élection pour
 		// cette sera reportée d'un cycle.
 		tickRef = millis();
-		if (counter > 1000) counter = 0;
+		if (counter > 1000) counter = 0;	// Faire ça plus intelligemment
 		else counter++;
 #endif
 
