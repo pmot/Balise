@@ -22,7 +22,7 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 int GSMM95::Init(const char* pinCode)
 {
-	int time = millis();	// On donne un temps limité à l'init
+	unsigned long time = millis();	// On donne un temps limité à l'init
 
 	// Init sequence, see "M95_HardwareDesign_V1.2.pdf", page 30.
 	// Reset!
@@ -253,7 +253,7 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 {
-  int time = 0;
+  unsigned long time = millis();
   
   GSMM95::state = GSMCONNECT_STATE_START;
   do
@@ -365,7 +365,7 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 {
-  int time = 0;
+  unsigned long time = millis();
   
   GSMM95::state = 0;
   do
