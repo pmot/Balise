@@ -141,9 +141,9 @@ void loop() {
 		// Acquisition GPS
 		if (itsTimeFor(nextSendToGround)) {
 #ifdef ORD_RT
-		  nextGPSRead = tickRef + SEND_TO_GROUND_DELAY;
+		  nextSendToGround = tickRef + SEND_TO_GROUND_DELAY;
 #else
-		  nextGPSRead = millis() + SEND_TO_GROUND_DELAY;
+		  nextSendToGround = millis() + SEND_TO_GROUND_DELAY;
 #endif
 		  if(newGpsDataAvailable)
 		  {
