@@ -2,7 +2,7 @@
 
 // #define DEBUG_ACCEL_TO_CONSOLE
 #define DEBUG_TO_CONSOLE
-#define DEV_MODE
+// #define DEV_MODE
 
 #include <avr/pgmspace.h>
 #include <Arduino.h>
@@ -88,6 +88,7 @@ void setup() {
 // the loop function runs over and over again forever
 void loop() {
 	uint8_t nbAP = 0;				// Nombre d'AP WIFI
+	unsigned long nextSendToGround;	// timestamp du prochain envoi des données au sol
 	unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
 	unsigned long nextWifiScanRes;	// timestamp de la lecture du scan WIFI en cours
 	unsigned long nextGPSRead;		// timestamp de la prochaine lecture des coordonnées GPS
@@ -98,19 +99,23 @@ void loop() {
 	int16_t y;	// Accélération en mg selon l'axe y
 
 	struct gpsData myGpsData;
-	bool gpsDataIsInvalid = true;
+	bool gpsDataIsInvalid = true;		// GDTREM : A revoir, completement tordu
+	bool newGpsDataAvailable = false;	// La méthode d'acquisition des données doit renvoyer true si valide
 	gpsSetup(&myGpsData);
 
+	nextSendToGround = millis();	// Doit avoir lieu un jour
 	nextWifiScan = millis();		// Doit avoir lieu un jour
 	nextWifiScanRes = 0;			// A la première itération on n'attend pas de résultat de scan
 	nextGPSRead = millis();			// Doit avoir lieu un jour
 	
 	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
 	myGSM.SendHttpReq(server, port, (char*)urlInit);
-	myGSM.Disconnect();
+	// myGSM.Disconnect();
 
 	// Main loop
 	while(1) {
+		
+		
 #ifdef ORD_RT
 		// Init de la référence de temps de l'élection d'une tâche.
 		// Le calcul de la prochaine éléction d'une tâche est déléguée à la tâche
@@ -130,6 +135,40 @@ void loop() {
 		consoleSerial.println(F(" milli Gs"));
 #endif
 
+		// Envoi des données au sol
+		// Acquisition GPS
+		if (itsTimeFor(nextSendToGround)) {
+#ifdef ORD_RT
+		  nextGPSRead = tickRef + SEND_TO_GROUND_DELAY;
+#else
+		  nextGPSRead = millis() + SEND_TO_GROUND_DELAY;
+#endif
+		  if(newGpsDataAvailable)
+		  {
+#ifdef DEBUG_TO_CONSOLE
+			consoleSerial.println(F("GSM - Nouvelles données GPS disponibles"));
+#endif
+			// Envoyer les données GPS
+			if(myGSM.Status())
+			{
+			  if(myGSM.SendHttpReq(server, port, (char *)"Trucmuche"))
+			  {
+			    // Donnnées envoyées
+			    newGpsDataAvailable = false;
+			  }
+			}
+			// Else, newGpsDataAvailable toujours vrai... (en mémoire, en attente)
+		  }
+		  else
+		  {
+			// Quelquechose à faire ?
+#ifdef DEBUG_TO_CONSOLE
+			consoleSerial.println(F("GSM - Pas de nouvelle donnée GPS disponible"));
+			printGpsData(myGpsData, consoleSerial);
+#endif
+		  }
+		}
+
 		// Acquisition GPS
 		if (itsTimeFor(nextGPSRead)) {
 #ifdef ORD_RT
@@ -141,6 +180,7 @@ void loop() {
 		  gpsRead(gps, gpsSerial, GPS_READ_TIME); // On lit les données pendant GPS_TIME ms
 		  if(gpsDataIsInvalid = setGpsData(gps, &myGpsData))
 		  {
+			newGpsDataAvailable |= false;		// Il y a peut être une acquisition antérieure, non envoyée
 #ifdef DEBUG_TO_CONSOLE
 			consoleSerial.println(F("GPS - Data not valid, last data : "));
 			printGpsData(myGpsData, consoleSerial);
@@ -148,6 +188,7 @@ void loop() {
 		  }
 		  else
 		  {
+			newGpsDataAvailable = true;
 #ifdef DEBUG_TO_CONSOLE
 			consoleSerial.println(F("GPS - Data valid, new data : "));
 			printGpsData(myGpsData, consoleSerial);
