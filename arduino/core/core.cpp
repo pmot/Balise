@@ -1,6 +1,6 @@
 // Core program
 
-#define DEBUG_ACCEL_TO_CONSOLE
+// #define DEBUG_ACCEL_TO_CONSOLE
 #define DEBUG_TO_CONSOLE
 #define DEV_MODE
 

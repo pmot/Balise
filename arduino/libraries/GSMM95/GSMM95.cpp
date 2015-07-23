@@ -48,6 +48,10 @@ int GSMM95::Init(const char* pinCode)
 	time = 0;
 	do
 	{
+		
+		GSMM95::pconsole->print(F("GSM - INIT - state : "));
+		GSMM95::pconsole->println(GSMM95::state);
+		
 		if(GSMM95::state == GSMINIT_STATE_START)
 		{
 			Serial.print(F("AT\r"));     
@@ -59,6 +63,10 @@ int GSMM95::Init(const char* pinCode)
 			{
 				GSMM95::state = GSMSTATE_INVALID;
 			}
+			GSMM95::pconsole->print(F("GSM - INIT - state : "));
+			GSMM95::pconsole->println(GSMM95::state);
+			GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+			GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_MODEM_OK)
@@ -72,7 +80,10 @@ int GSMM95::Init(const char* pinCode)
 			{ 
 				GSMM95::state = GSMSTATE_INVALID; 
 			}
-		}
+			GSMM95::pconsole->print(F("GSM - INIT - state : "));
+			GSMM95::pconsole->println(GSMM95::state);
+			GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+			GSMM95::pconsole->println(GSMM95::gsmBuf);		}
 	
 		if(GSMM95::state == GSMINIT_STATE_ECHO_DISABLED)
 		{								// after 0,5 - 10 sec., depends of the SIM card
@@ -89,6 +100,10 @@ int GSMM95::Init(const char* pinCode)
 					GSMM95::state = GSMINIT_STATE_SIM_STATUS_SECOND_CHANCE;	// Sinon...
 					break;
 			}
+			GSMM95::pconsole->print(F("GSM - INIT - state : "));
+			GSMM95::pconsole->println(GSMM95::state);
+			GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+			GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 	
 		if(GSMM95::state == GSMINIT_STATE_SIM_STATUS_SECOND_CHANCE)
@@ -104,7 +119,11 @@ int GSMM95::Init(const char* pinCode)
 			      GSMM95::pconsole->println(F("<"));
 			      return 0;
 			 }  
-			}  
+			}
+			GSMM95::pconsole->print(F("GSM - INIT - state : "));
+			GSMM95::pconsole->println(GSMM95::state);
+			GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+			GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 	
 		if(GSMM95::state == GSMINIT_STATE_PIN_REQUIRED)
@@ -112,7 +131,11 @@ int GSMM95::Init(const char* pinCode)
 		  Serial.print(F("AT+CPIN="));           // enter pin (SIM)     
 		  Serial.print(pinCode);
 		  Serial.print('\r');
-		  if(Expect(1000) == GSMSTATE_PIN_RDY) { GSMM95::state = GSMINIT_STATE_SIM_OK; } else { GSMM95::state = GSMSTATE_INVALID; } 
+		  if(Expect(1000) == GSMSTATE_PIN_RDY) { GSMM95::state = GSMINIT_STATE_SIM_OK; } else { GSMM95::state = GSMSTATE_INVALID; }
+		  GSMM95::pconsole->print(F("GSM - INIT - state : "));
+		  GSMM95::pconsole->println(GSMM95::state);
+		  GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+		  GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 	
 		if(GSMM95::state == GSMINIT_STATE_SIM_OK)
@@ -120,14 +143,22 @@ int GSMM95::Init(const char* pinCode)
 		  Serial.print(F("AT+IPR="));        // set Baudrate
 		  Serial.print(GSM_BAUDRATE);
 		  Serial.print('\r');
-		  if(Expect(1000) == GSMSTATE_OK) { GSMM95::state = GSMINIT_STATE_BAUDRATE_FIXED; } else { GSMM95::state = GSMSTATE_INVALID; } 
+		  if(Expect(1000) == GSMSTATE_OK) { GSMM95::state = GSMINIT_STATE_BAUDRATE_FIXED; } else { GSMM95::state = GSMSTATE_INVALID; }
+		  GSMM95::pconsole->print(F("GSM - INIT - state : "));
+		  GSMM95::pconsole->println(GSMM95::state);
+		  GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+		  GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 	
 		if(GSMM95::state == GSMINIT_STATE_BAUDRATE_FIXED)
 		{
 			Serial.print(F("AT+QIURC=0\r"));    // disable initial URC presentation   
 			time = 0;  
-			if(Expect(1000) == 1) { GSMM95::state = GSMINIT_STATE_URC_DISABLED; } else { GSMM95::state = GSMSTATE_INVALID; } 
+			if(Expect(1000) == 1) { GSMM95::state = GSMINIT_STATE_URC_DISABLED; } else { GSMM95::state = GSMSTATE_INVALID; }
+			GSMM95::pconsole->print(F("GSM - INIT - state : "));
+			GSMM95::pconsole->println(GSMM95::state);
+			GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+			GSMM95::pconsole->println(GSMM95::gsmBuf); 
 		}
 	
 		if(GSMM95::state == GSMINIT_STATE_URC_DISABLED)
@@ -150,15 +181,21 @@ int GSMM95::Init(const char* pinCode)
 			  {
 				GSMM95::state = GSMSTATE_INVALID;// after 60 sek. (30 x 2000 ms) not registered	
 			  } 
-		  } 
+		  }
+		  GSMM95::pconsole->print(F("GSM - INIT - state : "));
+		  GSMM95::pconsole->println(GSMM95::state);
+		  GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+		  GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 		  
 		if(GSMM95::state == GSMINIT_STATE_REGISTERED)
 		{
+		  GSMM95::pconsole->print(F("GSM - INIT - state : "));
+		  GSMM95::pconsole->println(GSMM95::state);
+		  GSMM95::pconsole->print(F("GSM - INIT - buf : "));
+		  GSMM95::pconsole->println(GSMM95::gsmBuf);
 		  return 1;								// Registered successfully ... let's go ahead!
 		}
-		GSMM95::pconsole->print(F("GSM - INIT : "));
-		GSMM95::pconsole->println(GSMM95::state);
 		if ((millis() - time) > 120000) return 0; // On sort au bout de 2 minutes
 		delay(500);		delay(500);								// Easy...
 	}
