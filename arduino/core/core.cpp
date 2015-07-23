@@ -87,6 +87,8 @@ void setup() {
 
 // the loop function runs over and over again forever
 void loop() {
+	char dataToSend[180] =	"";		// Au pif
+		
 	uint8_t nbAP = 0;				// Nombre d'AP WIFI
 	unsigned long nextSendToGround;	// timestamp du prochain envoi des données au sol
 	unsigned long nextWifiScan;		// timestamp du prochain scan WIFI
@@ -151,7 +153,19 @@ void loop() {
 			// Envoyer les données GPS
 			if(myGSM.Status())
 			{
-			  if(myGSM.SendHttpReq(server, port, (char *)"Trucmuche"))
+			  sprintf(dataToSend, "GET /webservice/ws?gps=%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",		// GDTREM : Meme pas honte
+				myGpsData.altitude,
+				myGpsData.longitude,
+				myGpsData.altitude,
+				myGpsData.speed,
+				myGpsData.satellites,
+				myGpsData.hdop,
+				myGpsData.fixAge,
+				myGpsData.date,
+				myGpsData.time,
+				myGpsData.dateAge
+			  );
+			  if(myGSM.SendHttpReq(server, port, dataToSend))
 			  {
 			    // Donnnées envoyées
 			    newGpsDataAvailable = false;

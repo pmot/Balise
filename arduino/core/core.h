@@ -29,7 +29,7 @@ const char pinCode[] PROGMEM = "1234";
 const char server[] PROGMEM = "geolocsp.com";
 const char port[] PROGMEM = "80";
 const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
-const char urlWS[] PROGMEM = "POST /webservice/ws";
+const char urlWS[] PROGMEM = "GET /webservice/ws";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
