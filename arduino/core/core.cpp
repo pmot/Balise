@@ -153,7 +153,8 @@ void loop() {
 			// Envoyer les données GPS
 			if(myGSM.Status())
 			{
-			  sprintf(dataToSend, "GET /webservice/ws?gps=%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",		// GDTREM : Meme pas honte
+			  sprintf(dataToSend, "%s%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",		// GDTREM : Meme pas honte
+			    urlGpsWS,
 				myGpsData.altitude,
 				myGpsData.longitude,
 				myGpsData.altitude,
