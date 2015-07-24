@@ -3,16 +3,7 @@
 
 int gpsSetup(struct gpsData* myData)
 {
-	memset(myData->latitude, '\0', 10);
-	memset(myData->longitude, '\0', 11);
-	memset(myData->altitude, '\0', 8);
-	memset(myData->speed, '\0', 7);
-	memset(myData->satellites, '\0', 4);
-	memset(myData->hdop, '\0', 5);
-	memset(myData->fixAge, '\0', 7);
-	memset(myData->date, '\0', 11);
-	memset(myData->time, '\0', 9);
-	memset(myData->dateAge, '\0', 7);
+	memset (myData, '\0', sizeof(struct gpsData));
 }
 
 void gpsRead(TinyGPS gps, SoftwareSerial serial, unsigned long ms)
@@ -23,7 +14,8 @@ void gpsRead(TinyGPS gps, SoftwareSerial serial, unsigned long ms)
 
 	do {
 		while (serial.available())
-			gps.encode(serial.read());
+			// gps.encode(serial.read());
+			consoleSerial.write(serial.read());
 	} while (millis() - start < ms);
 }
 
@@ -41,18 +33,23 @@ bool setGpsData(TinyGPS myGps, struct gpsData* myGpsData)
 	uhdop = myGps.hdop();
 	usat = myGps.satellites();
 	
+	consoleSerial.println(usat);
+
 	myGps.crack_datetime(&iyear, &bmonth, &bday,
 			&bhour, &bminute, &bsecond, &bhundredths, &udateAge);
 
+
+	consoleSerial.println(iyear);
+
 	
-	invalid ^= (flat == TinyGPS::GPS_INVALID_F_ANGLE);
-	invalid ^= (flon == TinyGPS::GPS_INVALID_F_ANGLE);
-	invalid ^= (falt == TinyGPS::GPS_INVALID_F_ALTITUDE);
-	invalid ^= (fspeed == TinyGPS::GPS_INVALID_F_SPEED);
-	invalid ^= (uhdop == TinyGPS::GPS_INVALID_HDOP);
-	invalid ^= (usat == TinyGPS::GPS_INVALID_SATELLITES);
-	invalid ^= (ufixAge == TinyGPS::GPS_INVALID_AGE);
-	invalid ^= (udateAge == TinyGPS::GPS_INVALID_AGE);
+	invalid |= (flat == TinyGPS::GPS_INVALID_F_ANGLE);
+	invalid |= (flon == TinyGPS::GPS_INVALID_F_ANGLE);
+	invalid |= (falt == TinyGPS::GPS_INVALID_F_ALTITUDE);
+	invalid |= (fspeed == TinyGPS::GPS_INVALID_F_SPEED);
+	invalid |= (uhdop == TinyGPS::GPS_INVALID_HDOP);
+	invalid |= (usat == TinyGPS::GPS_INVALID_SATELLITES);
+	invalid |= (ufixAge == TinyGPS::GPS_INVALID_AGE);
+	invalid |= (udateAge == TinyGPS::GPS_INVALID_AGE);
 
 	if (!invalid)
 	{
@@ -73,52 +70,5 @@ bool setGpsData(TinyGPS myGps, struct gpsData* myGpsData)
 	}
 	
 	return invalid;
-}
-
-void printGpsData(struct gpsData myGpsData, SoftwareSerial mySerial)
-{
-	mySerial.println(F("GPS - start"));
-	// Latitude
-	mySerial.print(F("GPS - LATITUDE : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.latitude);
-	// Longitude
-	mySerial.print(F("GPS - LONGITUDE : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.longitude);
-	// Altitude
-	mySerial.print(F("GPS - ALTITUDE : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.altitude);
-	// Speed
-	mySerial.print(F("GPS - SPEED : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.speed);
-	// Fix Age
-	mySerial.print(F("GPS - Fix Age : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.fixAge);
-	// HDOP
-	mySerial.print(F("GPS - HDOP : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.hdop);
-	// Satellites
-	mySerial.print(F("GPS - SATS : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.satellites);
-	// Date
-	mySerial.print(F("GPS - Date : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.date);
-	// Time
-	mySerial.print(F("GPS - Time : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.time);
-	// Date Age
-	mySerial.print(F("GPS - Date Age : "));
-	mySerial.print(F("GPS - "));
-	mySerial.println(myGpsData.dateAge);
-
-	mySerial.println(F("GPS - stop"));
 }
 

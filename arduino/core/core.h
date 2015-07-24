@@ -9,6 +9,19 @@
 // #define ORD_PREEMPT	// Privilégier l'exécution d'une tâche, par défaut
 #define ORD_RT			// Privilégier la régularité
 
+// Flag trace
+// 0 = no trace
+// 1 = ERROR
+// 2 = DEBUG
+// 3 = TRACE (contenu des variables)
+#define LOG_ERROR 1
+#define LOG_INFO 2
+#define LOG_TRACE 4
+
+const char debug PROGMEM = LOG_TRACE;
+
+#define PRINT_LOG(y,x)  if(debug>=y) { consoleSerial.print(__FUNCTION__); consoleSerial.print(F(": ")) ; consoleSerial.println(x); }
+
 // Définition des pin RX/TX des modules
 // #define GSM_TX	 0	// UART
 // #define GSM_RX	 1	// " "
@@ -20,6 +33,8 @@
 #define CONSOLE_RX	12
 // GSM
 #define GSM_PWRK	10
+//
+#define LED_PIN		13
 // APN
 const char gprsAPN[] PROGMEM = "websfr";
 const char gprsLogin[] PROGMEM = "";
@@ -33,7 +48,7 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/ws?gps=";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
-#define GPS_READ_TIME	1000
+#define GPS_READ_TIME	2000
 // Délai entre deux lectures de position GPS en ms
 #define GPS_READ_DELAY	5000
 // Délai d'attente de lecture du résultat du SCAN Wifi en ms (environ 3s)
@@ -44,6 +59,10 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/ws?gps=";
 #define SEND_TO_GROUND_DELAY	60000
 
 // Renvoi vrai si le ts est atteint
-static bool itsTimeFor(unsigned long);
+// static bool itsTimeFor(unsigned long);
+// Affichage des données sur le port console
+// A des fins de test/debug
+void printGpsData(struct gpsData *);
+
 
 #endif
