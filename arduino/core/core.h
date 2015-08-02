@@ -20,7 +20,7 @@
 
 const char debug PROGMEM = LOG_TRACE;
 
-#define PRINT_LOG(y,x)  if(debug>=y) { consoleSerial.print(__FUNCTION__); consoleSerial.print(F(": ")) ; consoleSerial.println(x); }
+#define PRINT_LOG(y,x)  if(debug>=y) { consoleSerial.listen(); consoleSerial.print(__FUNCTION__); consoleSerial.print(F(": ")) ; consoleSerial.println(x); }
 
 // Définition des pin RX/TX des modules
 // #define GSM_TX	 0	// UART

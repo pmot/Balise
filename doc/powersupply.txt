@@ -1,0 +1,20 @@
+La partie alimentation est composée :
+- d'un régulateur ajustable 3A réglé à 5v ;
+
+	Ref       : DE-SWADJ3
+	Ouput     : 3 à 12,5 V/3 A
+	Input min : 6v (le régulateur "décroche" à 5.35v) 
+	Input max : 35v
+
+- d'un adapteur 5v -> 3v3.
+
+	Ref : S7V8F3
+
+Les deux niveaux de tension disponibles permettent de mixer
+l'utilisation de modules en 3v3 et en 5v.
+Le courant de 3A permet de répondre aux pics de consommation
+des modules GPS (2A en pic, en communication).
+
+Note :
+La communication entre les modules 3v3 et la MCU peut nécessiter
+l'utilisation d'un adaptateur de niveau logique 3.3v/5v.

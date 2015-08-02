@@ -21,11 +21,12 @@
 #include <LIS331.h>
 #include "accelerometer.h"
 
-SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
-TinyGPS gps;
-
 // Console
 SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
+
+SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
+TinyGPS gps;
+struct gpsData myGpsData;
 
 void setup() {
 	// initialize digital pin 13 as an output.
@@ -45,39 +46,27 @@ void setup() {
 
 	PRINT_LOG(LOG_INFO ,F("gps init"));
 
-
 	gpsSerial.begin(9600);
-
+	gpsSetup(&myGpsData);
 
 	PRINT_LOG(LOG_INFO ,F("gps end"));
 
-
-
-
 	digitalWrite(LED_PIN, LOW);
-
 
 	PRINT_LOG(LOG_INFO ,F("end"));
 }
 
 void loop () {
 
+	while(1) {
 
+		gpsRead(gps, gpsSerial, GPS_READ_TIME);
+		setGpsData(gps, &myGpsData);
+		printGpsData(&myGpsData);
 
-	struct gpsData myGpsData;
+		delay(1000);
 
-	gpsRead(gps, gpsSerial, GPS_READ_TIME);
-	setGpsData(gps, &myGpsData);
-	// printGpsData(&myGpsData);
-
-
-
-	delay(1000);
-
-
-
-
-
+	}
 }
 
 
@@ -85,6 +74,7 @@ void loop () {
 
 void printGpsData(struct gpsData *pGpsData)
 {
+	consoleSerial.listen();
 	PRINT_LOG(LOG_INFO, F("GPS"));
 	// Latitude
 	PRINT_LOG(LOG_INFO, F("** LATITUDE: "));PRINT_LOG(LOG_INFO,pGpsData->latitude);

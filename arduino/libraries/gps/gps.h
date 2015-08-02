@@ -35,7 +35,5 @@ void gpsRead(TinyGPS, SoftwareSerial, unsigned long);
 // false si une des données est invalide, ou s'il n'y a pas le fix
 bool setGpsData(TinyGPS, struct gpsData*);
 
-extern SoftwareSerial consoleSerial;
-
 
 #endif

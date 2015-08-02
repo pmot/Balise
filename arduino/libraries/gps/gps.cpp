@@ -14,8 +14,7 @@ void gpsRead(TinyGPS gps, SoftwareSerial serial, unsigned long ms)
 
 	do {
 		while (serial.available())
-			// gps.encode(serial.read());
-			consoleSerial.write(serial.read());
+			gps.encode(serial.read());
 	} while (millis() - start < ms);
 }
 
@@ -33,14 +32,8 @@ bool setGpsData(TinyGPS myGps, struct gpsData* myGpsData)
 	uhdop = myGps.hdop();
 	usat = myGps.satellites();
 	
-	consoleSerial.println(usat);
-
 	myGps.crack_datetime(&iyear, &bmonth, &bday,
 			&bhour, &bminute, &bsecond, &bhundredths, &udateAge);
-
-
-	consoleSerial.println(iyear);
-
 	
 	invalid |= (flat == TinyGPS::GPS_INVALID_F_ANGLE);
 	invalid |= (flon == TinyGPS::GPS_INVALID_F_ANGLE);
@@ -70,5 +63,23 @@ bool setGpsData(TinyGPS myGps, struct gpsData* myGpsData)
 	}
 	
 	return invalid;
+}
+
+static void float2strn(float val, char *buf, int maxl, int *l)
+{
+  int vi = (int)val;  
+}
+
+static void int2strn(int val, char *buf, int maxl, int *l)
+{
+  int i = val;
+  int j = 0;	// Pointeur dans buf
+  memset(buf, '\0', maxl);
+  while (i)
+  {
+	i = (int) i - (int)i /10;
+	buf[j++] = i + 20;
+	
+  }
 }
 
