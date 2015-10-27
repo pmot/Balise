@@ -48,7 +48,7 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/ws?gps=";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
-#define GPS_READ_TIME	2000
+#define GPS_READ_TIME	1000
 // Délai entre deux lectures de position GPS en ms
 #define GPS_READ_DELAY	5000
 // Délai d'attente de lecture du résultat du SCAN Wifi en ms (environ 3s)

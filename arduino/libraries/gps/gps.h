@@ -25,7 +25,7 @@ int gpsSetup(struct gpsData*);
 
 // Lit les données sur le port série, s'arrête au bout de n millisecondes
 // Les données sont passées dans l'objet TinyGPS.
-void gpsRead(TinyGPS, SoftwareSerial, unsigned long);
+void gpsRead(TinyGPS*, SoftwareSerial, unsigned long);
 
 // Met les données GPS en forme (chaînes de caractères) et les passe
 // dans la structure gpsData.
@@ -33,7 +33,7 @@ void gpsRead(TinyGPS, SoftwareSerial, unsigned long);
 // retourne un booléen :
 // true si tout va bien (les données sont valides)
 // false si une des données est invalide, ou s'il n'y a pas le fix
-bool setGpsData(TinyGPS, struct gpsData*);
+bool gpsSetData(TinyGPS, struct gpsData*);
 
 
 #endif

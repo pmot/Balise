@@ -41,32 +41,31 @@ void setup() {
 	// GPS
 	//
 
-	pinMode(GPS_RX, INPUT_PULLUP);
-	// digitalWrite(GPS_RX, HIGH);
-
 	PRINT_LOG(LOG_INFO ,F("gps init"));
 
 	gpsSerial.begin(9600);
 	gpsSetup(&myGpsData);
-
+	
 	PRINT_LOG(LOG_INFO ,F("gps end"));
-
+	
 	digitalWrite(LED_PIN, LOW);
 
 	PRINT_LOG(LOG_INFO ,F("end"));
 }
 
 void loop () {
-
+	
 	while(1) {
-
-		gpsRead(gps, gpsSerial, GPS_READ_TIME);
-		setGpsData(gps, &myGpsData);
-		printGpsData(&myGpsData);
-
-		delay(1000);
-
+		
+		gpsRead(&gps, gpsSerial, GPS_READ_TIME);
+		
+		if (gpsSetData(gps, &myGpsData)) {
+			
+			printGpsData(&myGpsData);
+		}
+		
 	}
+	
 }
 
 
@@ -90,10 +89,8 @@ void printGpsData(struct gpsData *pGpsData)
 	PRINT_LOG(LOG_INFO, F("** HDOP: "));PRINT_LOG(LOG_INFO,pGpsData->hdop);
 	// Satellites
 	PRINT_LOG(LOG_INFO, F("** Nb SATS: "));PRINT_LOG(LOG_INFO,pGpsData->satellites);
-
 	// Date
 	PRINT_LOG(LOG_INFO, F("** Date: "));PRINT_LOG(LOG_INFO,pGpsData->date);
-
 	// Time
 	PRINT_LOG(LOG_INFO, F("** Time: "));PRINT_LOG(LOG_INFO,pGpsData->time);
 	// Date Age
