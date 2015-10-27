@@ -3,6 +3,9 @@
 #define CONSOLE_TX	11
 #define CONSOLE_RX	12
 
+#define GSM_PWRK	10
+
+
 SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX); // RX, TX
 char c;
 
@@ -12,7 +15,14 @@ void setup() {
   delay(5000);
   
   Serial.begin(9600);
-  
+
+  digitalWrite(GSM_PWRK, HIGH);
+  delay(5000);
+  digitalWrite(GSM_PWRK, LOW);
+  delay(2000);
+  digitalWrite(GSM_PWRK, HIGH);
+  delay(5000);  
+
   consoleSerial.listen();
   consoleSerial.begin(9600);
   consoleSerial.println("Hello");
@@ -49,6 +59,11 @@ void loop() {
   {
     c = consoleSerial.read();
     Serial.print(c);
+    if (c=='.') {
+      delay(1000);
+      Serial.println((char)26);
+      Serial.println();
+    }
   }
 
 }
