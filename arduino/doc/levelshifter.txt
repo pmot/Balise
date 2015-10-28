@@ -1,3 +1,0 @@
-Pour convertir les niveaux logiques entre les modules 3v3 et la MCU en 5v.
-
-Ref : BOB12009
