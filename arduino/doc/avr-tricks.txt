@@ -4,9 +4,12 @@ http://www.atmel.com/images/doc8453.pdf
 
 Et pour optimiser la taille du buffer UART :
 
-Si votre croquis/sketch ne recoit pas beaucoup de données à haute vitesse, vous pouvez probablement diviser la taille de ce buffer par 2 (ou peut-être même plus).
+Si votre croquis/sketch ne recoit pas beaucoup de données
+à haute vitesse, vous pouvez probablement diviser la taille de ce buffer
+par 2 (ou peut-être même plus).
 
-La taille du buffer série est définie dans HardwareSerial.cpp. Ce fichier peut être trouvé dans votre répertoire d'installation Arduino.:
+La taille du buffer série est définie dans HardwareSerial.cpp. Ce fichier
+peut être trouvé dans votre répertoire d'installation Arduino.:
 
 ....\Arduino-1.x.x\hardware\arduino\cores\arduino\HardwareSerial.cpp
 
