@@ -2,8 +2,16 @@ Pour développer sur l'avr, quelques trucs pour l'optimisation :
 
 http://www.atmel.com/images/doc8453.pdf
 
-En période de développement
----------------------------
-Pour ajouter un délai au moment du démarrage et se laisser le temps d'un téléversement salvateur :
+Et pour optimiser la taille du buffer UART :
 
-#define DEV_MODE
+Si votre croquis/sketch ne recoit pas beaucoup de données à haute vitesse, vous pouvez probablement diviser la taille de ce buffer par 2 (ou peut-être même plus).
+
+La taille du buffer série est définie dans HardwareSerial.cpp. Ce fichier peut être trouvé dans votre répertoire d'installation Arduino.:
+
+....\Arduino-1.x.x\hardware\arduino\cores\arduino\HardwareSerial.cpp
+
+Cherchez après la ligne:
+
+#define SERIAL_BUFFER_SIZE 64
+
+et changez la valeur 64 vers 32 (ou moins). 
