@@ -17,55 +17,118 @@
 #include <WiFly.h>
 #include "wifi_scan_ap.h"
 
-// ACCEL
+// ACCELEROMETRE
 #include <LIS331.h>
 #include "accelerometer.h"
+LIS331 lis;
 
 // Console
 SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
-
+// GPS
 SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
 TinyGPS gps;
 struct gpsData myGpsData;
+// ACCELEROMETRE
+LIS331 lis;
 
 void setup() {
-	// initialize digital pin 13 as an output.
+
+
+	PRINT_LOG(LOG_INFO ,F("SETUP begin"));
+
+
+	////////////////////////
+	// LED
+	////////////////////////
 	pinMode(LED_PIN, OUTPUT);
-	// allumer la LED le temps de l'initialisation
+
+	////////////////////////
+	// On allume la LED le temps de l'intialisation
+	////////////////////////
 	digitalWrite(LED_PIN, HIGH);
 
+
+	////////////////////////
+	// CONSOLE
+	////////////////////////
 	consoleSerial.begin(9600);
-	PRINT_LOG(LOG_INFO ,F("begin"));
 
-	//
+
+	////////////////////////
 	// GPS
-	//
-
-	PRINT_LOG(LOG_INFO ,F("gps init"));
-
+	////////////////////////
+	PRINT_LOG(LOG_INFO ,F("\tGPS begin"));
 	gpsSerial.begin(9600);
 	gpsSetup(&myGpsData);
+	PRINT_LOG(LOG_INFO ,F("\tGPS end"));
+
+	////////////////////////
+	// Accéléromètre
+	////////////////////////
+	accelerometerSetup(lis);
 	
-	PRINT_LOG(LOG_INFO ,F("gps end"));
-	
+
+	////////////////////////
+	// Fin de l'initialisation
+	// on éteint la LED
+	////////////////////////
 	digitalWrite(LED_PIN, LOW);
 
-	PRINT_LOG(LOG_INFO ,F("end"));
+	PRINT_LOG(LOG_INFO ,F("SETUP end"));
 }
 
+
+boolean i2c_receive;
+
 void loop () {
+	boolean stop=false;
+	short vitesse=1;
+
 	
-	while(1) {
+	////////////////////////////////
+	// Boucle principale
+	// En cas de sortie de la boucle
+	// il faut prévoir un redémarrage
+	////////////////////////////////
+	while(!stop) {
+
+		if(vitesse) {
+			float temp1;
+			gpsRead(&gps, gpsSerial, GPS_READ_TIME);
+			sscanf(gps.speed,"%f.0",&temp1);
+			vitesse = (short) temp1;
+		}
+		//
+		// La vitesse est nulle
+		// on surveille l'accéleromètre
+		// impossible de mettre une interruption sur les PIN 4 & 5
+		//
+		else {
+			attachInterrupt(/* SDA */ , I2CReceive(), FALLING);
+
+
+			if(i2c_receive) {
+				lis.getYValue(&y);
+			}
+		}
+
+
 		
-		gpsRead(&gps, gpsSerial, GPS_READ_TIME);
 		
 		if (gpsSetData(gps, &myGpsData)) {
-			
 			printGpsData(&myGpsData);
 		}
 		
+
+
+
+
 	}
 	
+
+	//
+	// redemarrage (connecter une broche sur le RST)
+	//
 }
 
 
