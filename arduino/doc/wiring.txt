@@ -21,6 +21,7 @@ Initialisation: SoftwareSerial gpsSerial(7, 6);
 Accelerometre
 =============
 La communication s'effectue via I2C.
+I2C: 4 (SDA) and 5 (SCL)
 
 LED 
 ===
