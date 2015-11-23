@@ -93,6 +93,10 @@ void loop () {
 	while(!stop) {
 
 		if(vitesse) {
+			//
+			// Créer une fonction
+			// pour libérer la pile
+			//
 			float temp1;
 			gpsRead(&gps, gpsSerial, GPS_READ_TIME);
 			sscanf(gps.speed,"%f.0",&temp1);
@@ -108,7 +112,15 @@ void loop () {
 
 
 			if(i2c_receive) {
+				//
+				// Créer une fonction
+				// pour libérer la pile
+				//
+				int16_t y;
+
 				lis.getYValue(&y);
+
+
 			}
 		}
 
