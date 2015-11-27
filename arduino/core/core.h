@@ -1,6 +1,14 @@
 #ifndef __CORE_H__
 #define __CORE_H__
 
+
+
+// #define GPS_ACTIF
+// #define WIFI_ACTIF
+#define ACCEL_ACTIF
+// #define GSM_ACTIF
+
+
 // Identifiant de la balise
 #define	BALISE_ID	"AVEZE"
 
@@ -31,6 +39,7 @@ const char debug PROGMEM = LOG_TRACE;
 #define GPS_RX   7
 #define CONSOLE_TX	11
 #define CONSOLE_RX	12
+#define ACCEL_INT	2
 // GSM
 #define GSM_PWRK	10
 //
@@ -63,6 +72,8 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/ws?gps=";
 // Affichage des données sur le port console
 // A des fins de test/debug
 void printGpsData(struct gpsData *);
+void I2CReceived();
+
 
 
 #endif

@@ -20,7 +20,6 @@
 // ACCELEROMETRE
 #include <LIS331.h>
 #include "accelerometer.h"
-LIS331 lis;
 
 // Console
 SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
@@ -30,6 +29,8 @@ TinyGPS gps;
 struct gpsData myGpsData;
 // ACCELEROMETRE
 LIS331 lis;
+
+
 
 void setup() {
 
@@ -51,9 +52,9 @@ void setup() {
 	////////////////////////
 	// CONSOLE
 	////////////////////////
-	consoleSerial.begin(9600);
+	consoleSerial.begin(115200);
 
-
+#ifdef GPS_ACTIF
 	////////////////////////
 	// GPS
 	////////////////////////
@@ -61,12 +62,21 @@ void setup() {
 	gpsSerial.begin(9600);
 	gpsSetup(&myGpsData);
 	PRINT_LOG(LOG_INFO ,F("\tGPS end"));
+#endif
 
+#ifdef ACCEL_ACTIF
 	////////////////////////
 	// Accéléromètre
 	////////////////////////
+	PRINT_LOG(LOG_INFO ,F("\tACCEL begin"));
 	accelerometerSetup(lis);
-	
+	lis.setYEnable(true);
+	lis.setXEnable(false);
+	lis.setZEnable(false);
+	PRINT_LOG(LOG_INFO ,F("\tACCEL end"));
+	attachInterrupt( digitalPinToInterrupt(ACCEL_INT), I2CReceived, CHANGE);
+#endif
+
 
 	////////////////////////
 	// Fin de l'initialisation
@@ -82,8 +92,7 @@ boolean i2c_receive;
 
 void loop () {
 	boolean stop=false;
-	short vitesse=1;
-
+	short vitesse=0;
 	
 	////////////////////////////////
 	// Boucle principale
@@ -97,10 +106,10 @@ void loop () {
 			// Créer une fonction
 			// pour libérer la pile
 			//
-			float temp1;
+#ifdef GPS_ACTIF
 			gpsRead(&gps, gpsSerial, GPS_READ_TIME);
-			sscanf(gps.speed,"%f.0",&temp1);
-			vitesse = (short) temp1;
+			vitesse = (short) gps.speed();
+#endif
 		}
 		//
 		// La vitesse est nulle
@@ -108,42 +117,46 @@ void loop () {
 		// impossible de mettre une interruption sur les PIN 4 & 5
 		//
 		else {
-			attachInterrupt(/* SDA */ , I2CReceive(), FALLING);
+#ifdef ACCEL_ACTIF
+			int16_t y;
+
+			// attachInterrupt( 2 , I2CReceive, FALLING);
 
 
 			if(i2c_receive) {
+				PRINT_LOG(LOG_TRACE ,F("\ti2c_receive=1"));
 				//
 				// Créer une fonction
 				// pour libérer la pile
 				//
+
 				int16_t y;
 
-				lis.getYValue(&y);
+				while(lis.statusHasYDataAvailable()) {
+					lis.getYValue(&y);
+					PRINT_LOG(LOG_TRACE ,y);
+				}
 
-
+				i2c_receive=false;
 			}
+#endif
+
 		}
-
-
-		
-		
-		if (gpsSetData(gps, &myGpsData)) {
-			printGpsData(&myGpsData);
-		}
-		
-
-
-
+		// if (gpsSetData(gps, &myGpsData)) {
+		//	printGpsData(&myGpsData);
+		// }
 
 	}
-	
-
 	//
 	// redemarrage (connecter une broche sur le RST)
 	//
 }
 
+void  I2CReceived()
+{
+	i2c_receive=true;
 
+}
 
 
 void printGpsData(struct gpsData *pGpsData)

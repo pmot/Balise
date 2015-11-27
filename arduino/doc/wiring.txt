@@ -22,6 +22,7 @@ Accelerometre
 =============
 La communication s'effectue via I2C.
 I2C: 4 (SDA) and 5 (SCL)
+Interruption sur la PIN 2
 
 LED 
 ===
