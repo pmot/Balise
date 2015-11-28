@@ -76,7 +76,8 @@ void setup() {
 		PRINT_LOG(LOG_ERROR ,F("\tACCEL init error"));
 	}
 	PRINT_LOG(LOG_INFO ,F("\tACCEL end"));
-	attachInterrupt( digitalPinToInterrupt(ACCEL_INT), I2CReceived, FALLING);
+	pinMode(ACCEL_INT, INPUT_PULLUP);
+	attachInterrupt( digitalPinToInterrupt(ACCEL_INT), I2CReceived, CHANGE);
 
 #endif
 
@@ -149,7 +150,7 @@ void loop () {
 		// if (gpsSetData(gps, &myGpsData)) {
 		//	printGpsData(&myGpsData);
 		// }
-		PRINT_LOG(LOG_TRACE ,i++)
+		PRINT_LOG(LOG_TRACE ,  digitalRead(ACCEL_INT));
 		delay(1000);
 
 	} // WHILE
