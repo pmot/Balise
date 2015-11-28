@@ -40,6 +40,7 @@ const char debug PROGMEM = LOG_TRACE;
 #define CONSOLE_TX	11
 #define CONSOLE_RX	12
 #define ACCEL_INT	2
+
 // GSM
 #define GSM_PWRK	10
 //

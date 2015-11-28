@@ -35,7 +35,13 @@ LIS331 lis;
 void setup() {
 
 
-	PRINT_LOG(LOG_INFO ,F("SETUP begin"));
+	////////////////////////
+	// CONSOLE
+	////////////////////////
+	consoleSerial.begin(115200);
+	PRINT_LOG(LOG_INFO ,F(""));
+	PRINT_LOG(LOG_INFO ,F("#########################"));
+	PRINT_LOG(LOG_INFO ,F("BEGIN"));
 
 
 	////////////////////////
@@ -47,12 +53,6 @@ void setup() {
 	// On allume la LED le temps de l'intialisation
 	////////////////////////
 	digitalWrite(LED_PIN, HIGH);
-
-
-	////////////////////////
-	// CONSOLE
-	////////////////////////
-	consoleSerial.begin(115200);
 
 #ifdef GPS_ACTIF
 	////////////////////////
@@ -69,12 +69,15 @@ void setup() {
 	// Accéléromètre
 	////////////////////////
 	PRINT_LOG(LOG_INFO ,F("\tACCEL begin"));
-	accelerometerSetup(lis);
-	lis.setYEnable(true);
-	lis.setXEnable(false);
-	lis.setZEnable(false);
+
+	Wire.begin();
+
+	if(!accelerometerSetup(&lis)) {
+		PRINT_LOG(LOG_ERROR ,F("\tACCEL init error"));
+	}
 	PRINT_LOG(LOG_INFO ,F("\tACCEL end"));
-	attachInterrupt( digitalPinToInterrupt(ACCEL_INT), I2CReceived, CHANGE);
+	attachInterrupt( digitalPinToInterrupt(ACCEL_INT), I2CReceived, FALLING);
+
 #endif
 
 
@@ -84,15 +87,16 @@ void setup() {
 	////////////////////////
 	digitalWrite(LED_PIN, LOW);
 
-	PRINT_LOG(LOG_INFO ,F("SETUP end"));
+	PRINT_LOG(LOG_INFO ,F("END"));
 }
 
 
-boolean i2c_receive;
+bool i2c_receive=false;
 
 void loop () {
 	boolean stop=false;
 	short vitesse=0;
+	byte i=0;
 	
 	////////////////////////////////
 	// Boucle principale
@@ -120,11 +124,11 @@ void loop () {
 #ifdef ACCEL_ACTIF
 			int16_t y;
 
-			// attachInterrupt( 2 , I2CReceive, FALLING);
+			// attachInterrupt( 2 , I2CReceive, RISING);
 
 
 			if(i2c_receive) {
-				PRINT_LOG(LOG_TRACE ,F("\ti2c_receive=1"));
+				PRINT_LOG(LOG_TRACE ,F("\ti2c_receive=true"));
 				//
 				// Créer une fonction
 				// pour libérer la pile
@@ -132,10 +136,10 @@ void loop () {
 
 				int16_t y;
 
-				while(lis.statusHasYDataAvailable()) {
-					lis.getYValue(&y);
-					PRINT_LOG(LOG_TRACE ,y);
-				}
+				//while(lis.statusHasYDataAvailable()) {
+				//	lis.getYValue(&y);
+				//	PRINT_LOG(LOG_TRACE ,y);
+				//}
 
 				i2c_receive=false;
 			}
@@ -145,8 +149,11 @@ void loop () {
 		// if (gpsSetData(gps, &myGpsData)) {
 		//	printGpsData(&myGpsData);
 		// }
+		PRINT_LOG(LOG_TRACE ,i++)
+		delay(1000);
 
-	}
+	} // WHILE
+
 	//
 	// redemarrage (connecter une broche sur le RST)
 	//
@@ -154,8 +161,9 @@ void loop () {
 
 void  I2CReceived()
 {
+	PRINT_LOG(LOG_TRACE ,F("BEGIN"));
 	i2c_receive=true;
-
+	PRINT_LOG(LOG_TRACE ,F("END"));
 }
 
 
