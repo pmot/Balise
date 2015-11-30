@@ -9,7 +9,7 @@ bool accelerometerSetup(LIS331 *lis) {
 			DR1DR0: Data rate (00=50Hz, 01=100Hz, 10=400Hz, 11=1000Hz)
 			Zen, Yen, Xen: Z enable, Y enable, X enable
 	 */
-	byte ctrlRegByte = 0b00100010; // 00111010 : normal mode, 1000Hz, y enabled, xz disabled
+	byte ctrlRegByte = 0b00111010; // 00111010 : normal mode, 1000Hz, y enabled, xz disabled
 	// Send the data for Control Register 1
 	if(!lis->writeReg(LR_CTRL_REG1, ctrlRegByte)) {
 		return false;
@@ -17,10 +17,17 @@ bool accelerometerSetup(LIS331 *lis) {
 
 	/////////////////////////////////////////////////////////////////
 	// This register configures high pass filter
-	ctrlRegByte = 0b00000000; // High pass filter off
+	ctrlRegByte = 0b00000000; // High pass filter off 0b00000000 - 0b00110100
+
 	// Send the data for Control Register 2
 	if(!lis->writeReg(LR_CTRL_REG2, ctrlRegByte)) {
 		return false;
+	}
+
+	// Filter value
+	ctrlRegByte = 0b00000010; //
+	if(!lis->writeReg( LR_REFERENCE, ctrlRegByte)) {
+			return false;
 	}
 
 	/////////////////////////////////////////////////////////////////
@@ -58,7 +65,7 @@ bool accelerometerSetup(LIS331 *lis) {
 		ST: self-test enable (default 0=disabled)
 		SIM: SPI mode selection(default 0=4 wire interface, 1=3 wire interface)
 	 */
-	ctrlRegByte = 0b00110000; // 00110000 : 24G (full scale)
+	ctrlRegByte = 0b00000000; // 00110000 : 24G (full scale)
 	if(!lis->writeReg(LR_CTRL_REG4, ctrlRegByte)) {
 		return false;
 	}
@@ -80,13 +87,13 @@ bool accelerometerSetup(LIS331 *lis) {
 
 	/////////////////////////////////////////////////////////////////
 	// Control Register for interrupt threshold for high events (INT1_THS)
-	ctrlRegByte = 0b01111100; // 0 0000000 : value TBD
+	ctrlRegByte = 0b00000011; // 0 0000000 : value TBD
 	if(!lis->writeReg(LR_INT1_THS, ctrlRegByte)) { // configurer le seuil d'interruption
 		return false;
 	}
 	/////////////////////////////////////////////////////////////////
 	// Control Register for interrupt duration for high events (INT1_DURATION)
-	ctrlRegByte = 0b0001110; // 0 0000010 : value TBD
+	ctrlRegByte = 0b0000111; // 0 0000010 : value TBD
 	if(!lis->writeReg(LR_INT1_DURATION, ctrlRegByte)) {
 		return false;
 	}
