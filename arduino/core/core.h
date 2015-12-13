@@ -72,10 +72,6 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/push.php?gps=";
 #define LIMITE_VITESSE_ACCEL 	4
 #define FREQUENCE_ENVOI_DEFAUT	60 // doit être inférieure ou égale à 255
 
-//
-// Messages
-//
-const char MessErrorSendLocalisation[] PROGMEM = "Error in sendMessageLocalisation";
 
 // Renvoi vrai si le ts est atteint
 // static bool itsTimeFor(unsigned long);
