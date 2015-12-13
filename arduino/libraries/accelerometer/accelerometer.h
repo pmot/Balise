@@ -14,6 +14,15 @@
 				// approximate scale factor for full range (+/-24g)
 				// scale factor: +/-24g = 48G range. 2^16 bits. 48/65536 = 0.0007324
 
+#define DIRECTION_PAIRE 2
+#define DIRECTION_IMPAIRE 1
+#define DIRECTION_INCONNUE 0
+
 bool accelerometerSetup(LIS331 *);
+void accelerometerReset();
+
+void accelerometerStore(byte);
+byte accelerometerDirection();
+
 
 #endif

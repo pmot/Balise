@@ -26,7 +26,7 @@ SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
 // GPS
 SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
 TinyGPS gps;
-struct gpsData myGpsData;
+
 // ACCELEROMETRE
 LIS331 lis;
 
@@ -81,6 +81,9 @@ void setup() {
 
 #endif
 
+#ifdef GSM_ACTIF
+	myGSM.Init(pinCode);
+#endif
 
 	////////////////////////
 	// Fin de l'initialisation
@@ -93,32 +96,50 @@ void setup() {
 
 
 bool i2c_receive=false;
-bool stop=false;
 short vitesse=0;
-byte i=0;
+byte memo_tempo=0;
+bool first_loop=false;
 
 void loop () {
+	int16_t y;
+	byte direction;
+	byte tempo = (unsigned char) ((millis()/1000)%FREQUENCE_ENVOI_DEFAUT); // voir pour rendre paramétrable cette valeur
+	bool envoi = tempo > memo_tempo ? true : false;
+	memo_tempo = tempo;
 
-	if(vitesse) {
-		//
-		// Créer une fonction
-		// pour libérer la pile
-		//
+	noInterrupts();
+
 #ifdef GPS_ACTIF
-		gpsRead(&gps, gpsSerial, GPS_READ_TIME);
-		vitesse = (short) gps.speed();
+	gpsRead(&gps, gpsSerial, GPS_READ_TIME);
+
+	vitesse = (short) gps.speed();
 #endif
+
+	if(vitesse> LIMITE_VITESSE_ACCEL) {
+		direction=accelerometerDirection();
+		if(first_loop==false) {
+				PRINT_LOG(LOG_TRACE,F("Direction:"));
+				PRINT_LOG(LOG_TRACE,direction);
+		}
+		first_loop=true;
 	}
+	//////////////////////////////////////////////////////////////////////////
 	//
 	// La vitesse est nulle
 	// on surveille l'accéleromètre
 	// impossible de mettre une interruption sur les PIN 4 & 5
+	// Prendre le sens de circulation au démarrage avec la vitesse =0 à 4 km/h
 	//
+	//////////////////////////////////////////////////////////////////////////
 	else {
 #ifdef ACCEL_ACTIF
-		int16_t y;
+		if(first_loop) {
+			accelerometerReset();
+			first_loop=false;
+		}
 
-		// attachInterrupt( 2 , I2CReceive, RISING);
+		interrupts();
+		attachInterrupt( 2 , I2CReceived, RISING);
 
 
 		if(i2c_receive == true) {
@@ -128,24 +149,33 @@ void loop () {
 			// pour libérer la pile
 			//
 
-			int16_t y;
 			lis.getYValue(&y);
+
 			PRINT_LOG(LOG_TRACE ,y);
 
-			//
-			// Prendre le sens de circulation au démarrage avec la vitesse =0 à 6 km/h
-			//
-
-			//while(lis.statusHasYDataAvailable()) {
-			//	lis.getYValue(&y);
-			//	PRINT_LOG(LOG_TRACE ,y);
-			//}
+			if(y!=0) accelerometerStore(y>0 ? 1 : 0);
 
 			i2c_receive=false;
 		}
 #endif
-
 	}
+
+	if(envoi) {
+
+#ifdef GSM_ACTIF
+
+		if(!sendMessageLocalisation(&gps,direction)) {
+			PRINT_LOG(LOG_ERROR ,F("Error in sendMessageLocalisation"));
+		}
+
+#endif
+	}
+
+
+
+	delay(1000);
+
+
 	// if (gpsSetData(gps, &myGpsData)) {
 	//	printGpsData(&myGpsData);
 	// }
@@ -187,4 +217,36 @@ void printGpsData(struct gpsData *pGpsData)
 
 }
 
+byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
+	char dataToSend[180];
+	struct gpsData myGpsData;
+
+
+#ifdef GSM_ACTIF
+	if(myGSM.Status()) {
+
+		if (gpsSetData(myGps, &myGpsData)) {
+			printGpsData(&myGpsData);
+		}
+
+		sprintf(dataToSend, "%s%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+				urlGpsWS,
+				myGpsData.altitude,
+				myGpsData.longitude,
+				myGpsData.altitude,
+				myGpsData.speed,
+				myGpsData.satellites,
+				myGpsData.hdop,
+				myGpsData.fixAge,
+				myGpsData.date,
+				myGpsData.time,
+				myGpsData.dateAge
+			);
+		if(!myGSM.SendHttpReq(server, port, dataToSend)) {
+			return 0;
+		}
+	}
+#endif
+	return 1;
+}
 

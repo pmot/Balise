@@ -1,5 +1,8 @@
 #include "accelerometer.h"
 
+unsigned long AccelMemory;
+
+
 bool accelerometerSetup(LIS331 *lis) {
 
 	/////////////////////////////////////////////////////////////////
@@ -113,4 +116,39 @@ bool accelerometerSetup(LIS331 *lis) {
 	}
 
 	return true;
+}
+
+void accelerometerReset()
+{
+	AccelMemory=0;
+}
+//
+// On mémorise 1 ou 0 sur 32 bits en fonction du sens
+//
+void accelerometerStore(byte poussee)
+{
+	AccelMemory<<=1;
+	AccelMemory|= poussee;
+}
+/////////////////////////////////////////////////////////////////
+//
+// Si 80 %  de 0 ou de 1, on détermine la direction
+//
+// 1 = Sens pair
+// 2 = Sens impair
+//
+// Sinon
+//
+/////////////////////////////////////////////////////////////////
+byte accelerometerDirection()
+{
+	byte impair=0, pair=0,i;
+	unsigned long j;
+
+	for(i=0;i<32;i++) {
+		j=0;j<<=i;
+		if(AccelMemory & j) impair++;
+		else pair++;
+	}
+	return pair>20 ? DIRECTION_PAIRE : impair>20 ? DIRECTION_IMPAIRE : DIRECTION_INCONNUE;
 }

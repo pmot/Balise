@@ -21,7 +21,7 @@ void gpsRead(TinyGPS* pGps, SoftwareSerial mySerial, unsigned long ms)
 
 }
 
-bool gpsSetData(TinyGPS myGps, struct gpsData* pMyGpsData)
+bool gpsSetData(TinyGPS *myGps, struct gpsData* pMyGpsData)
 {
 	float flat, flon, falt, fspeed;
 	byte bmonth, bday, bhour, bminute, bsecond, bhundredths;
@@ -29,13 +29,13 @@ bool gpsSetData(TinyGPS myGps, struct gpsData* pMyGpsData)
 	unsigned long ufixAge, usat, uhdop, udateAge;
 	bool valid = true;
 	
-	myGps.f_get_position(&flat, &flon, &ufixAge);
-	falt = myGps.f_altitude();
-	fspeed = myGps.f_speed_kmph();
-	uhdop = myGps.hdop();
-	usat = myGps.satellites();
+	myGps->f_get_position(&flat, &flon, &ufixAge);
+	falt = myGps->f_altitude();
+	fspeed = myGps->f_speed_kmph();
+	uhdop = myGps->hdop();
+	usat = myGps->satellites();
 	
-	myGps.crack_datetime(&iyear, &bmonth, &bday,
+	myGps->crack_datetime(&iyear, &bmonth, &bday,
 			&bhour, &bminute, &bsecond, &bhundredths, &udateAge);
 
 	valid &= (flat != TinyGPS::GPS_INVALID_F_ANGLE);

@@ -51,10 +51,10 @@ const char gprsLogin[] PROGMEM = "";
 const char gprsPassword[] PROGMEM = "";
 const char pinCode[] PROGMEM = "1234";
 // Serveur
-const char server[] PROGMEM = "geolocsp.com";
+const char server[] PROGMEM = "www.geneliere.fr";
 const char port[] PROGMEM = "80";
-const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
-const char urlGpsWS[] PROGMEM = "GET /webservice/ws?gps=";
+// const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
+const char urlGpsWS[] PROGMEM = "GET /webservice/push.php?gps=";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
@@ -67,6 +67,15 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/ws?gps=";
 #define WIFI_SCAN_DELAY	10000
 // Délai entre deux transmissions au sol
 #define SEND_TO_GROUND_DELAY	60000
+
+
+#define LIMITE_VITESSE_ACCEL 	4
+#define FREQUENCE_ENVOI_DEFAUT	60 // doit être inférieure ou égale à 255
+
+//
+// Messages
+//
+const char MessErrorSendLocalisation[] PROGMEM = "Error in sendMessageLocalisation";
 
 // Renvoi vrai si le ts est atteint
 // static bool itsTimeFor(unsigned long);
