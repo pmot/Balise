@@ -5,7 +5,8 @@
 #include <stdlib.h>
 #include <SoftwareSerial.h>
 
-#include "core.h"
+
+#define PRINT_LOG(y,x)  if(debug>=y) { consoleSerial.listen(); consoleSerial.print(__FUNCTION__); consoleSerial.print(F(": ")) ; consoleSerial.println(x); }
 
 // GPS
 #include <TinyGPS.h>
@@ -21,6 +22,11 @@
 #include <LIS331.h>
 #include "accelerometer.h"
 
+// GSM
+#include "GSMM95.h"
+
+#include "core.h"
+
 // Console
 SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
 // GPS
@@ -30,6 +36,9 @@ TinyGPS gps;
 // ACCELEROMETRE
 LIS331 lis;
 
+
+// carte GSM
+GSMM95 myGSM(GSM_PWRK, &consoleSerial);
 
 
 void setup() {
@@ -104,7 +113,7 @@ void loop () {
 	int16_t y;
 	byte direction;
 	byte tempo = (unsigned char) ((millis()/1000)%FREQUENCE_ENVOI_DEFAUT); // voir pour rendre paramétrable cette valeur
-	bool envoi = tempo > memo_tempo ? true : false;
+	bool envoi = tempo < memo_tempo ? true : false;
 	memo_tempo = tempo;
 
 	noInterrupts();
@@ -116,6 +125,8 @@ void loop () {
 #endif
 
 	if(vitesse> LIMITE_VITESSE_ACCEL) {
+		PRINT_LOG(LOG_TRACE ,F("La vitesse est suffisant importante, on ne tient pas compte de l'accéléromètre"));
+
 		direction=accelerometerDirection();
 		if(first_loop==false) {
 				PRINT_LOG(LOG_TRACE,F("Direction:"));
@@ -134,6 +145,9 @@ void loop () {
 	else {
 #ifdef ACCEL_ACTIF
 		if(first_loop) {
+			//
+			// On réinitialise le buffer mémorisant le sens de circulation au départ
+			//
 			accelerometerReset();
 			first_loop=false;
 		}
@@ -161,7 +175,7 @@ void loop () {
 	}
 
 	if(envoi) {
-
+		PRINT_LOG(LOG_TRACE ,F("Envoi d'une position"));
 #ifdef GSM_ACTIF
 
 		if(!sendMessageLocalisation(&gps,direction)) {
@@ -218,34 +232,43 @@ void printGpsData(struct gpsData *pGpsData)
 }
 
 byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
-	char dataToSend[180];
-	struct gpsData myGpsData;
-
+	char dataToSend[150];
 
 #ifdef GSM_ACTIF
 	if(myGSM.Status()) {
+		PRINT_LOG(LOG_TRACE , F("GSM Status: OK"));
 
-		if (gpsSetData(myGps, &myGpsData)) {
+		if(myGSM.Connect(gprsAPN, gprsLogin, gprsPassword)) {
+			PRINT_LOG(LOG_TRACE , F("GSM Connect: OK"));
+		}
+		else {
+			PRINT_LOG(LOG_TRACE , F("GSM Connect: NON OK"));
+		}
+
+
+		//
+		// on copie le début de la requete
+		//
+		strcpy(dataToSend,urlGpsWS);
+
+		PRINT_LOG(LOG_TRACE ,F("Envoi d'une position"));
+		 /*
+
+		if (gpsToString(myGps, dataToSend+strlen(dataToSend))) {
 			printGpsData(&myGpsData);
 		}
 
-		sprintf(dataToSend, "%s%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
-				urlGpsWS,
-				myGpsData.altitude,
-				myGpsData.longitude,
-				myGpsData.altitude,
-				myGpsData.speed,
-				myGpsData.satellites,
-				myGpsData.hdop,
-				myGpsData.fixAge,
-				myGpsData.date,
-				myGpsData.time,
-				myGpsData.dateAge
-			);
+		PRINT_LOG(LOG_TRACE ,dataToSend);
+
 		if(!myGSM.SendHttpReq(server, port, dataToSend)) {
 			return 0;
-		}
+		}*/
 	}
+	else {
+		PRINT_LOG(LOG_INFO, F("GSM Status: NON OK"));
+	}
+	// PRINT_LOG(LOG_INFO, myGSM.gsmBuf);
+
 #endif
 	return 1;
 }

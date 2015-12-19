@@ -69,9 +69,8 @@ class GSMM95
       int  Connect(const char*, const char*, const char*);
       int  SendHttpReq(const char*, const char*, char*);
       void Disconnect();
-    
-    private:
-	  char gsmBuf[GSM_BUFSZ];
+
+      char gsmBuf[GSM_BUFSZ];
 	  byte pwrKey;
 	  int  state;
 	  SoftwareSerial* pconsole;

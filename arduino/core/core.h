@@ -6,7 +6,7 @@
 // #define GPS_ACTIF
 // #define WIFI_ACTIF
 #define ACCEL_ACTIF
-// #define GSM_ACTIF
+#define GSM_ACTIF
 
 
 // Identifiant de la balise
@@ -25,10 +25,10 @@
 #define LOG_ERROR 1
 #define LOG_INFO 2
 #define LOG_TRACE 4
-
 const char debug PROGMEM = LOG_TRACE;
-
 #define PRINT_LOG(y,x)  if(debug>=y) { consoleSerial.listen(); consoleSerial.print(__FUNCTION__); consoleSerial.print(F(": ")) ; consoleSerial.println(x); }
+
+
 
 // Définition des pin RX/TX des modules
 // #define GSM_TX	 0	// UART
@@ -53,8 +53,7 @@ const char pinCode[] PROGMEM = "1234";
 // Serveur
 const char server[] PROGMEM = "www.geneliere.fr";
 const char port[] PROGMEM = "80";
-// const char urlInit[] PROGMEM = "GET /webservice/up/AVEZE HTTP/1.1";
-const char urlGpsWS[] PROGMEM = "GET /webservice/push.php?gps=";
+const char urlGpsWS[] PROGMEM = "GET /gps/get.php?gps=";
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
@@ -70,7 +69,7 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/push.php?gps=";
 
 
 #define LIMITE_VITESSE_ACCEL 	4
-#define FREQUENCE_ENVOI_DEFAUT	60 // doit être inférieure ou égale à 255
+#define FREQUENCE_ENVOI_DEFAUT	15 // doit être inférieure ou égale à 255
 
 
 // Renvoi vrai si le ts est atteint
@@ -79,6 +78,7 @@ const char urlGpsWS[] PROGMEM = "GET /webservice/push.php?gps=";
 // A des fins de test/debug
 void printGpsData(struct gpsData *);
 void I2CReceived();
+byte sendMessageLocalisation(TinyGPS *, byte);
 
 
 

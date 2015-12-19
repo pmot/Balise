@@ -68,21 +68,51 @@ bool gpsSetData(TinyGPS *myGps, struct gpsData* pMyGpsData)
 	return valid;
 }
 
-static void float2strn(float val, char *buf, int maxl, int *l)
+bool gpsToString(TinyGPS *myGps, char* stringBuffer)
 {
-  int vi = (int)val;  
-}
+	float flat, flon, falt, fspeed;
+	byte bmonth, bday, bhour, bminute, bsecond, bhundredths;
+	int iyear;
+	unsigned long ufixAge, usat, uhdop, udateAge;
+	bool valid = true;
 
-static void int2strn(int val, char *buf, int maxl, int *l)
-{
-  int i = val;
-  int j = 0;	// Pointeur dans buf
-  memset(buf, '\0', maxl);
-  while (i)
-  {
-	i = (int) i - (int)i /10;
-	buf[j++] = i + 20;
-	
-  }
-}
+	myGps->f_get_position(&flat, &flon, &ufixAge);
+	falt = myGps->f_altitude();
+	fspeed = myGps->f_speed_kmph();
+	uhdop = myGps->hdop();
+	usat = myGps->satellites();
 
+	myGps->crack_datetime(&iyear, &bmonth, &bday,
+			&bhour, &bminute, &bsecond, &bhundredths, &udateAge);
+
+	valid &= (flat != TinyGPS::GPS_INVALID_F_ANGLE);
+	valid &= (flon != TinyGPS::GPS_INVALID_F_ANGLE);
+	valid &= (falt != TinyGPS::GPS_INVALID_F_ALTITUDE);
+	valid &= (fspeed != TinyGPS::GPS_INVALID_F_SPEED);
+	valid &= (uhdop != TinyGPS::GPS_INVALID_HDOP);
+	valid &= (usat != TinyGPS::GPS_INVALID_SATELLITES);
+	valid &= (ufixAge != TinyGPS::GPS_INVALID_AGE);
+	valid &= (udateAge != TinyGPS::GPS_INVALID_AGE);
+
+	if (valid)
+	{
+
+		sprintf(stringBuffer, "%8.6f,%9.6,%6.2f,%5.2f,%u,%u,%u,%02d/%02d/%02d,%02d:%02d:%02d,%u",
+				flat,
+				flon,
+				falt,
+				fspeed,
+
+				usat,
+				uhdop,
+				ufixAge,
+
+				bmonth, bday, iyear,
+				bhour, bminute, bsecond,
+
+				udateAge
+		);
+	}
+
+	return valid;
+}
