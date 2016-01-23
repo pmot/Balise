@@ -23,7 +23,7 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 int GSMM95::Init(const char* pinCode)
 {
-	unsigned long time = millis();	// On donne un temps limit� � l'init
+	unsigned long time = millis();	// On donne un temps limite l'init
 
 	GSMM95::pconsole->println(__FUNCTION__);
 
@@ -52,7 +52,7 @@ int GSMM95::Init(const char* pinCode)
 	do {
 
 
-		GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+		GSMM95::pconsole->print(F("\tstate : "));
 		GSMM95::pconsole->println(GSMM95::state);
 
 		if(GSMM95::state == GSMINIT_STATE_START) {
@@ -66,10 +66,11 @@ int GSMM95::Init(const char* pinCode)
 			//
 			// TRACE, à remplacer par PRINT_LOG
 			//
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+			GSMM95::pconsole->print(F("\tstate : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf);
+			GSMM95::pconsole->print(F("\tbuf : *"));
+			GSMM95::pconsole->print(GSMM95::gsmBuf);
+			GSMM95::pconsole->println(F("*"));
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_MODEM_OK)	{
@@ -496,6 +497,8 @@ int GSMM95::Expect(int timeout)
   int  inByte = 0;
   char WS[3];
 
+  GSMM95::pconsole->println(__FUNCTION__);
+
   //----- erase gsmBuf
   memset(gsmBuf, 0, GSM_BUFSZ);
   memset(WS, 0, 3);
@@ -519,6 +522,12 @@ int GSMM95::Expect(int timeout)
   //----- analyse the reaction of the mobile module
   for (byte i=0; i < MAX_GSM_STRINGS; i++)
   {
+
+	GSMM95::pconsole->print("Recherche de ");
+	GSMM95::pconsole->print(gsmStrings[i]);
+	GSMM95::pconsole->print(" dans ");
+	GSMM95::pconsole->println(gsmBuf);
+	
 	if(strstr(gsmBuf, gsmStrings[i]))
 	{
 	  return i+1;

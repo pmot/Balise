@@ -38,9 +38,11 @@
 #define GSMCONNECT_STATE_DONE					206
 
 #define MAX_GSM_STRINGS	16
-static const char gsmStrings[MAX_GSM_STRINGS][20] PROGMEM =
+// GDTREM : Trouver comment le mettre en flash
+static const char gsmStrings[MAX_GSM_STRINGS][20] =
 {
 	"OK\r\n",					// 1
+	// "OK",					// 1
 	"SIM PIN\r\n",				// Etc
 	"READY\r\n",
 	"0,1\r\n",
