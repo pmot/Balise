@@ -27,7 +27,6 @@ int GSMM95::Init(const char* pinCode)
 
 	GSMM95::pconsole->println(__FUNCTION__);
 
-
 	// Init sequence, see "M95_HardwareDesign_V1.2.pdf", page 30.
 	// Reset!
 	digitalWrite(GSMM95::pwrKey, LOW);
@@ -52,10 +51,11 @@ int GSMM95::Init(const char* pinCode)
 	do {
 
 
-		GSMM95::pconsole->print(F("\tstate : "));
+		GSMM95::pconsole->print(F("\tGSM - INIT - Begin Loop state : "));
 		GSMM95::pconsole->println(GSMM95::state);
 
 		if(GSMM95::state == GSMINIT_STATE_START) {
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_START"));
 			Serial.print(F("AT\r"));     
 			if(Expect(1000) == GSMSTATE_OK)	{
 				GSMM95::state = GSMINIT_STATE_MODEM_OK;
@@ -66,14 +66,14 @@ int GSMM95::Init(const char* pinCode)
 			//
 			// TRACE, à remplacer par PRINT_LOG
 			//
-			GSMM95::pconsole->print(F("\tstate : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tbuf : *"));
-			GSMM95::pconsole->print(GSMM95::gsmBuf);
-			GSMM95::pconsole->println(F("*"));
+			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			// GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_MODEM_OK)	{
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_MODEM_OK"));
 			Serial.print(F("ATE0\r"));
 			if(Expect(1000) == GSMSTATE_OK) {
 				GSMM95::state = GSMINIT_STATE_ECHO_DISABLED; 
@@ -85,12 +85,14 @@ int GSMM95::Init(const char* pinCode)
 			//
 			// TRACE, à remplacer par PRINT_LOG
 			//
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf);		}
+			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			// GSMM95::pconsole->println(GSMM95::gsmBuf);
+		}
 
 		if(GSMM95::state == GSMINIT_STATE_ECHO_DISABLED) {		// after 0,5 - 10 sec., depends of the SIM card
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_ECHO_DISABLED"));
 			Serial.print(F("AT+CPIN?\r"));
 			switch (Expect(10000)) {		// wait for initial URC presentation "+CPIN: SIM PIN" or similar
 			case GSMSTATE_PIN_REQ:
@@ -106,13 +108,14 @@ int GSMM95::Init(const char* pinCode)
 			//
 			// TRACE, à remplacer par PRINT_LOG
 			//
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf);
+			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			//GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_SIM_STATUS_SECOND_CHANCE) {
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_SIM_STATUS_SECOND_CHANCE"));
 			switch (Expect(10000)) { 		// new try: wait for initial URC presentation "+CPIN: SIM PIN" or similar
 
 			case GSMSTATE_PIN_REQ: GSMM95::state = GSMINIT_STATE_SIM_STATUS_SECOND_CHANCE; break; 		// get +CPIN: SIM PIN
@@ -127,45 +130,53 @@ int GSMM95::Init(const char* pinCode)
 				return 0;
 			}
 			}
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf);
+			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			// GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_PIN_REQUIRED) {
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_PIN_REQUIRED"));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Setting PIN code : "));
+			GSMM95::pconsole->println(pinCode);
 			Serial.print(F("AT+CPIN="));           // enter pin (SIM)
 			Serial.print(pinCode);
 			Serial.print('\r');
 			if(Expect(1000) == GSMSTATE_PIN_RDY) { GSMM95::state = GSMINIT_STATE_SIM_OK; } else { GSMM95::state = GSMSTATE_INVALID; }
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
-			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Setting PIN code returned : "));
 			GSMM95::pconsole->println(GSMM95::gsmBuf);
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
+			GSMM95::pconsole->println(GSMM95::state);
+			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			// GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_SIM_OK) {
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_SIM_OK"));
 			Serial.print(F("AT+IPR="));        // set Baudrate
 			Serial.print(GSM_BAUDRATE);
 			Serial.print('\r');
 			if(Expect(1000) == GSMSTATE_OK) { GSMM95::state = GSMINIT_STATE_BAUDRATE_FIXED; } else { GSMM95::state = GSMSTATE_INVALID; }
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf);
+			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			//GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_BAUDRATE_FIXED) {
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_BAUDRATE_FIXED"));
 			Serial.print(F("AT+QIURC=0\r"));    // disable initial URC presentation   
 			time = 0;  
 			if(Expect(1000) == 1) { GSMM95::state = GSMINIT_STATE_URC_DISABLED; } else { GSMM95::state = GSMSTATE_INVALID; }
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf); 
+			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			//GSMM95::pconsole->println(GSMM95::gsmBuf); 
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_URC_DISABLED) {
+			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_URC_DISABLED"));
 			delay(2000);
 			Serial.print(F("AT+CREG?\r"));        // Network Registration Report
 			int ret_reg = Expect(1000);
@@ -181,17 +192,16 @@ int GSMM95::Init(const char* pinCode)
 					GSMM95::state = GSMSTATE_INVALID;// after 60 sek. (30 x 2000 ms) not registered
 				}
 			}
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf);
+			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			//GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_REGISTERED) {
-			GSMM95::pconsole->print(F("\tGSM - INIT - state : "));
-			GSMM95::pconsole->println(GSMM95::state);
-			GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			GSMM95::pconsole->println(GSMM95::gsmBuf);
+			GSMM95::pconsole->println(F("\tGSM - INIT - state : GSMINIT_STATE_REGISTERED"));
+			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
+			//GSMM95::pconsole->println(GSMM95::gsmBuf);
 			return 1;								// Registered successfully ... let's go ahead!
 		}
 		if ((millis() - time) > 120000) return 0; // On sort au bout de 2 minutes
@@ -254,7 +264,7 @@ int GSMM95::Status()
 			return 1;
 		}
 	}
-	while(GSMM95::state <= 999);
+	while(GSMM95::state < 9999);
 
 	return 0;                                                                     // ERROR while dialing
 }
@@ -488,7 +498,7 @@ ATTENTION: The length of the reaction times of the mobile module depend on the c
 			  is changed.
 
 Return value = 0      ---> No known response of the mobile module detected 
-R�ckgabewert = 1 - 18 ---> Response detected (see below)
+Rckgabewert = 1 - 18 ---> Response detected (see below)
 The public variable "gsmBuf" contains the last response from the mobile module
 */
 int GSMM95::Expect(int timeout)
@@ -496,6 +506,7 @@ int GSMM95::Expect(int timeout)
   int  index = 0;
   int  inByte = 0;
   char WS[3];
+  char expectBuf[MAX_GSM_STRING_SZ];
 
   GSMM95::pconsole->println(__FUNCTION__);
 
@@ -522,15 +533,16 @@ int GSMM95::Expect(int timeout)
   //----- analyse the reaction of the mobile module
   for (byte i=0; i < MAX_GSM_STRINGS; i++)
   {
-
-	GSMM95::pconsole->print("Recherche de ");
-	GSMM95::pconsole->print(gsmStrings[i]);
-	GSMM95::pconsole->print(" dans ");
-	GSMM95::pconsole->println(gsmBuf);
-	
-	if(strstr(gsmBuf, gsmStrings[i]))
+	strcpy_P(expectBuf, (char*)pgm_read_word(&(gsmStrings[i])));
+	if(strstr(gsmBuf, expectBuf))
 	{
-	  return i+1;
+	  GSMM95::pconsole->print(F("\tFound : "));
+	  GSMM95::pconsole->print(expectBuf);
+	  GSMM95::pconsole->print(F(" in : "));
+	  GSMM95::pconsole->println(GSMM95::gsmBuf);
+	  GSMM95::pconsole->print(F("\tTransition state is : "));
+	  GSMM95::pconsole->println(i);
+	  return i;
 	}
   }
 
