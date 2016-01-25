@@ -14,6 +14,7 @@
 #define GSMSTATE_NET_REG_2G		5
 #define GSMSTATE_NET_REG_3G		6
 #define GSMSTATE_GPRS_ATTACHED	8
+#define GSMSTATE_IP_INITIAL		9
 // ...
 #define	GSMSTATE_OK				15
 

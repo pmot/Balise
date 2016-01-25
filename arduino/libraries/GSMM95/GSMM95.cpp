@@ -25,6 +25,7 @@ int GSMM95::Init(const char* pinCode)
 {
 	unsigned long time = millis();	// On donne un temps limite l'init
 
+	GSMM95::pconsole->print(F("######## IN : "));
 	GSMM95::pconsole->println(__FUNCTION__);
 
 	// Init sequence, see "M95_HardwareDesign_V1.2.pdf", page 30.
@@ -68,8 +69,6 @@ int GSMM95::Init(const char* pinCode)
 			//
 			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			// GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_MODEM_OK)	{
@@ -87,8 +86,6 @@ int GSMM95::Init(const char* pinCode)
 			//
 			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			// GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_ECHO_DISABLED) {		// after 0,5 - 10 sec., depends of the SIM card
@@ -110,8 +107,6 @@ int GSMM95::Init(const char* pinCode)
 			//
 			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			//GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_SIM_STATUS_SECOND_CHANCE) {
@@ -132,8 +127,6 @@ int GSMM95::Init(const char* pinCode)
 			}
 			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			// GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_PIN_REQUIRED) {
@@ -148,8 +141,6 @@ int GSMM95::Init(const char* pinCode)
 			GSMM95::pconsole->println(GSMM95::gsmBuf);
 			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			// GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			// GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_SIM_OK) {
@@ -160,56 +151,36 @@ int GSMM95::Init(const char* pinCode)
 			if(Expect(1000) == GSMSTATE_OK) { GSMM95::state = GSMINIT_STATE_BAUDRATE_FIXED; } else { GSMM95::state = GSMSTATE_INVALID; }
 			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			//GSMM95::pconsole->println(GSMM95::gsmBuf);
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_BAUDRATE_FIXED) {
 			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_BAUDRATE_FIXED"));
 			Serial.print(F("AT+QIURC=0\r"));    // disable initial URC presentation   
 			time = 0;  
-			if(Expect(1000) == 1) { GSMM95::state = GSMINIT_STATE_URC_DISABLED; } else { GSMM95::state = GSMSTATE_INVALID; }
+			if(Expect(1000) == GSMSTATE_OK) { GSMM95::state = GSMINIT_STATE_URC_DISABLED; } else { GSMM95::state = GSMSTATE_INVALID; }
 			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
 			GSMM95::pconsole->println(GSMM95::state);
-			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			//GSMM95::pconsole->println(GSMM95::gsmBuf); 
 		}
 
 		if(GSMM95::state == GSMINIT_STATE_URC_DISABLED) {
 			GSMM95::pconsole->println(F("\tGSM - INIT - Actual state : GSMINIT_STATE_URC_DISABLED"));
 			delay(2000);
-			Serial.print(F("AT+CREG?\r"));        // Network Registration Report
-			int ret_reg = Expect(1000);
-			if ((ret_reg == GSMSTATE_NET_REG_2G) || (ret_reg == GSMSTATE_NET_REG_3G))	 {
-				GSMM95::state = GSMINIT_STATE_REGISTERED; 	// get: Registered in home network or roaming
-			}
-			else  {
-				delay(2000);
-				if(time++ < 30) {
-					GSMM95::state = GSMM95::state;	// stay in this state until timeout
-				}
-				else {
-					GSMM95::state = GSMSTATE_INVALID;// after 60 sek. (30 x 2000 ms) not registered
-				}
-			}
-			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
-			GSMM95::pconsole->println(GSMM95::state);
-			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			//GSMM95::pconsole->println(GSMM95::gsmBuf);
+			GSMM95::pconsole->print(F("######## OUT A : "));
+			GSMM95::pconsole->println(__FUNCTION__);
+			return 1;							// Init completed ... let's go ahead!
 		}
-
-		if(GSMM95::state == GSMINIT_STATE_REGISTERED) {
-			GSMM95::pconsole->println(F("\tGSM - INIT - state : GSMINIT_STATE_REGISTERED"));
-			//GSMM95::pconsole->print(F("\tGSM - INIT - buf : "));
-			//GSMM95::pconsole->println(GSMM95::gsmBuf);
-			return 1;								// Registered successfully ... let's go ahead!
+		if ((millis() - time) > 120000) {
+			GSMM95::pconsole->print(F("######## OUT B : "));
+			GSMM95::pconsole->println(__FUNCTION__);			
+			return 0; // On sort au bout de 2 minutes
 		}
-		if ((millis() - time) > 120000) return 0; // On sort au bout de 2 minutes
 		delay(500);		delay(500);								// Easy...
 	}
 	while(GSMM95::state < GSMSTATE_INVALID);
 
-	return 0;			// ERROR ... no Registration in the network
+	GSMM95::pconsole->print(F("######## OUT C : "));
+	GSMM95::pconsole->println(__FUNCTION__);
+	return 0;			// ERROR ...
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -227,45 +198,52 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 int GSMM95::Status()
 {
-	char Status_string[100];
+	// char Status_string[100];
+
+	GSMM95::pconsole->print(F("######## IN : "));
+	GSMM95::pconsole->println(__FUNCTION__);
 
 	GSMM95::state = 0;
 	do {
 		if(GSMM95::state == 0) {
 			Serial.print(F("AT+CREG?\r"));                                               // Query register state of GSM network
 			Expect(1000);
-			strcpy(Status_string, GSMM95::gsmBuf);
+			// strcpy(Status_string, GSMM95::gsmBuf);
 			GSMM95::state += 1;
 		}
 
 		if(GSMM95::state == 1) {
 			Serial.print(F("AT+CGREG?\r"));                                              // Query register state of GPRS network
 			Expect(1000);
-			strcat(Status_string, GSMM95::gsmBuf);
+			// strcat(Status_string, GSMM95::gsmBuf);
 			GSMM95::state += 1;
 		}
 
 		if(GSMM95::state == 2) {
 			Serial.print(F("AT+CSQ\r"));                                                 // Query the RF signal strength
 			Expect(1000);
-			strcat(Status_string, GSMM95::gsmBuf);
+			// strcat(Status_string, GSMM95::gsmBuf);
 			GSMM95::state += 1;
 		}
 
 		if(GSMM95::state == 3) {
 			Serial.print(F("AT+COPS?\r"));                                               // Query the current selected operator
 			Expect(1000);
-			strcat(Status_string, GSMM95::gsmBuf);
+			// strcat(Status_string, GSMM95::gsmBuf);
 			GSMM95::state += 1;
 		}
 
 		if(GSMM95::state == 4) {
-			strcpy(GSMM95::gsmBuf, Status_string);
+			// strcpy(GSMM95::gsmBuf, Status_string);
+			GSMM95::pconsole->print(F("######## OUT A : "));
+			GSMM95::pconsole->println(__FUNCTION__);
 			return 1;
 		}
 	}
-	while(GSMM95::state < 9999);
+	while(GSMM95::state >= 9998);
 
+	GSMM95::pconsole->print(F("######## OUT B : "));
+	GSMM95::pconsole->println(__FUNCTION__);
 	return 0;                                                                     // ERROR while dialing
 }
 
@@ -297,28 +275,59 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 	unsigned long time = millis();
 	GSMM95::state = GSMCONNECT_STATE_START;
 
+	GSMM95::pconsole->print(F("######## IN : "));
 	GSMM95::pconsole->println(__FUNCTION__);
 
 
 	do  {
+
+/*
+ * 
+ * Revoir CREG
+ * 
+ 			Serial.print(F("AT+CREG?\r"));        // Network Registration Report
+			int ret_reg = Expect(1000);
+			if ((ret_reg == GSMSTATE_NET_REG_2G) || (ret_reg == GSMSTATE_NET_REG_3G))	 {
+				GSMM95::state = GSMINIT_STATE_REGISTERED; 	// get: Registered in home network or roaming
+			}
+			else  {
+				delay(2000);
+				if(time++ < 30) {
+					GSMM95::state = GSMM95::state;	// stay in this state until timeout
+				}
+				else {
+					GSMM95::state = GSMSTATE_INVALID;// after 60 sek. (30 x 2000 ms) not registered
+				}
+			}
+ *
+ */
+ 
 		if(GSMM95::state == GSMCONNECT_STATE_START) 	{
+			
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - Actual state :  GSMCONNECT_STATE_START"));
+			
 			Serial.print(F("AT+CREG?\r"));								// Network Registration Report
 			int ret_reg = Expect(1000);
 
 			if ((ret_reg == GSMSTATE_NET_REG_2G) || (ret_reg == GSMSTATE_NET_REG_3G))   {
-				GSMM95::pconsole->print(F("\tGSM - GSMCONNECT_STATE_START - GSMCONNECT_STATE_REGISTERED"));
 				GSMM95::state = GSMCONNECT_STATE_REGISTERED;
 			}
 			else  {
 				GSMM95::state = GSMSTATE_INVALID;
-				GSMM95::pconsole->print(F("\tGSM - GSMCONNECT_STATE_START - GSMSTATE_INVALID"));
 			}
+			
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
+			GSMM95::pconsole->println(GSMM95::state);		
+			
 		}
 
-		if(GSMM95::state == GSMCONNECT_STATE_REGISTERED)		{			// Judge network?
+		if(GSMM95::state == GSMCONNECT_STATE_REGISTERED)		{		// Judge network?
+			
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - Actual state :  GSMCONNECT_STATE_REGISTERED"));
+			
 			Serial.print(F("AT+CGATT?\r"));								// attach to GPRS service?
 			if(Expect(1000) == GSMSTATE_GPRS_ATTACHED) 	{				// need +CGATT: 1
-				GSMM95::state = GSMCONNECT_STATE_GPRS_ATTACHED; 			// get: attach
+				GSMM95::state = GSMCONNECT_STATE_GPRS_ATTACHED; 		// get: attach
 			}
 			else  {
 				delay(2000);
@@ -326,48 +335,103 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 					GSMM95::state = GSMM95::state;						// stay in this state until timeout
 				}
 				else  {
-					GSMM95::state = GSMSTATE_INVALID;						// after 60 sek. (30 x 2000 ms) not attach
+					GSMM95::state = GSMSTATE_INVALID;					// after 60 sek. (30 x 2000 ms) not attach
 				}
 			}
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
+			GSMM95::pconsole->println(GSMM95::state);		
 		}
 
 		if(GSMM95::state == GSMCONNECT_STATE_GPRS_ATTACHED)  {
-			Serial.print(F("AT+QISTAT\r"));                                              // Query current connection status
-			if(Expect(1000) == 8) { GSMM95::state = GSMCONNECT_STATE_IP_INITIAL; } else { GSMM95::state = GSMSTATE_INVALID; }      // need STATE: IP INITIAL
+			
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - Actual state :  GSMCONNECT_STATE_GPRS_ATTACHED"));
+
+			Serial.print(F("AT+QISTAT\r"));                             // Query current connection status
+			if(Expect(1000) == GSMSTATE_IP_INITIAL) {
+				GSMM95::state = GSMCONNECT_STATE_IP_INITIAL;
+			} 
+			else {
+				GSMM95::state = GSMSTATE_INVALID;
+			}      // need STATE: IP INITIAL
+			
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
+			GSMM95::pconsole->println(GSMM95::state);	
+			
 		}
 
 		if(GSMM95::state == GSMCONNECT_STATE_IP_INITIAL)   {
-			Serial.print(F("AT+QICSGP=1,\""));				    								     // Select GPRS as the bearer
+			
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - Actual state :  GSMCONNECT_STATE_IP_INITIAL"));
+
+			Serial.print(F("AT+QICSGP=1,\""));				    		// Select GPRS as the bearer
 			Serial.print(APN);
 			Serial.print(F("\",\""));
 			Serial.print(USER);
 			Serial.print(F("\",\""));
 			Serial.print(PWD);
 			Serial.print(F("\"\r"));
-			if(Expect(1000) == GSMSTATE_OK) { GSMM95::state = GSMCONNECT_STATE_APN_SET; } else { GSMM95::state = GSMSTATE_INVALID; }      // need OK
+			if(Expect(1000) == GSMSTATE_OK) {
+				GSMM95::state = GSMCONNECT_STATE_APN_SET;
+			} else {
+				GSMM95::state = GSMSTATE_INVALID;
+			}      // need OK
+
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
+			GSMM95::pconsole->println(GSMM95::state);				
+			
 		}
 
 		if(GSMM95::state == GSMCONNECT_STATE_APN_SET) {
-			Serial.print(F("AT+QIDNSIP=1\r"));                                           // Connect via domain name (not via IP address!)
-			if(Expect(1000) == GSMSTATE_OK) { GSMM95::state = GSMCONNECT_STATE_DOMAIN_SET; } else { GSMM95::state = GSMSTATE_INVALID; }      // need OK
+			
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - Actual state :  GSMCONNECT_STATE_APN_SET"));
+			
+			Serial.print(F("AT+QIDNSIP=1\r"));                          // Connect via domain name (not via IP address!)
+			if(Expect(1000) == GSMSTATE_OK) {
+				GSMM95::state = GSMCONNECT_STATE_DOMAIN_SET;
+			} else {
+				GSMM95::state = GSMSTATE_INVALID;
+			}      // need OK
+			
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
+			GSMM95::pconsole->println(GSMM95::state);	
+			
 		}
 
-		if(GSMM95::state == GSMCONNECT_STATE_DOMAIN_SET)  {
-			Serial.print(F("AT+QISTAT\r"));                                              // Query current connection status
-			if(Expect(1000) == 8) { GSMM95::state = GSMCONNECT_STATE_DONE; } else { GSMM95::state = GSMSTATE_INVALID; }      // need STATE: IP INITIAL, IP STATUS or IP CLOSE
+		if(GSMM95::state == GSMCONNECT_STATE_DOMAIN_SET) {
+			
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - Actual state :  GSMCONNECT_STATE_DOMAIN_SET"));
+			
+			Serial.print(F("AT+QISTAT\r"));                    			// Query current connection status
+			if(Expect(1000) == GSMSTATE_IP_INITIAL) {
+				GSMM95::state = GSMCONNECT_STATE_DONE;
+			} else {
+				GSMM95::state = GSMSTATE_INVALID;
+			}      // need STATE: IP INITIAL, IP STATUS or IP CLOSE
+			
+			GSMM95::pconsole->print(F("\tGSM - INIT - Next state : "));
+			GSMM95::pconsole->println(GSMM95::state);
 		}
 
 		if(GSMM95::state == GSMCONNECT_STATE_DONE)  {
-			return 1;											// GPRS connect successfully ... let's go ahead!
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - Actual state :  GSMCONNECT_STATE_DONE"));
+			GSMM95::pconsole->print(F("######## OUT A : "));
+			GSMM95::pconsole->println(__FUNCTION__);
+			return 1;													// GPRS connect successfully ... let's go ahead!
 		}
 		GSMM95::pconsole->print(F("\tGSM - CONNECT : "));
 		GSMM95::pconsole->println(GSMM95::state);
-		if ((millis() - time) > 120000) return 0; // On sort au bout de 2 minutes
+		if ((millis() - time) > 120000) {
+			GSMM95::pconsole->print(F("######## OUT B : "));
+			GSMM95::pconsole->println(__FUNCTION__);
+			return 0; // On sort au bout de 2 minutes
+		}
 		delay(500);
 	}
 	while(GSMM95::state < GSMSTATE_INVALID);
-  
-  return 0;																							  // ERROR ... no GPRS connect
+
+	GSMM95::pconsole->print(F("######## OUT C : "));
+	GSMM95::pconsole->println(__FUNCTION__);  
+	return 0;													  		// ERROR ... no GPRS connect
 }
 
 /*----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -401,6 +465,9 @@ The public variable "gsmBuf" contains the last response from the mobile module
 int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 {
 	unsigned long time = millis();
+
+	GSMM95::pconsole->print(F("######## IN : "));
+	GSMM95::pconsole->println(__FUNCTION__); 
 
 	GSMM95::state = 0;
 	do {
@@ -442,12 +509,16 @@ int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 		}
 
 		if(GSMM95::state == 5) {
+			GSMM95::pconsole->print(F("######## OUT A : "));
+			GSMM95::pconsole->println(__FUNCTION__); 
 			return 1;				  // GPRS connect successfully ... let's go ahead!
 		}
 
 	}
 	while(GSMM95::state < GSMSTATE_INVALID);
 
+	GSMM95::pconsole->print(F("######## OUT B : "));
+	GSMM95::pconsole->println(__FUNCTION__); 
 	return 0;					 // ERROR ... no GPRS connect
 }
 
@@ -464,18 +535,22 @@ The public variable "gsmBuf" contains the last response from the mobile module
 */
 void GSMM95::Disconnect()
 {
-  // GSMM95::state = 0;
-  // do
-  // {
-  //  if(GSMM95::state == 0)
-  //  {
+	GSMM95::pconsole->print(F("######## IN : "));
+	GSMM95::pconsole->println(__FUNCTION__); 
+	// GSMM95::state = 0;
+	// do
+	// {
+	//  if(GSMM95::state == 0)
+	//  {
       Serial.print(F("AT+QIDEACT\r"));		// Deactivate GPRS context
       // if(Expect(10000) == 1) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }
       // if(Expect(10000) == 1) { break; } else { GSMM95::state = GSMSTATE_INVALID; }
 
-  //  }
-  // }
-  // while(GSMM95::state < GSMSTATE_INVALID);
+	//  }
+	// }
+	// while(GSMM95::state < GSMSTATE_INVALID);
+	GSMM95::pconsole->print(F("######## OUT : "));
+	GSMM95::pconsole->println(__FUNCTION__);
 }
 
  
@@ -508,6 +583,7 @@ int GSMM95::Expect(int timeout)
   char WS[3];
   char expectBuf[MAX_GSM_STRING_SZ];
 
+  GSMM95::pconsole->print(F("######## IN : "));
   GSMM95::pconsole->println(__FUNCTION__);
 
   //----- erase gsmBuf
@@ -515,7 +591,7 @@ int GSMM95::Expect(int timeout)
   memset(WS, 0, 3);
 
   //----- clear Serial Line Buffer
-  while(Serial.available()) { Serial.read(); }
+  // while(Serial.available()) { Serial.read(); }
   
   //----- wait of the first character for "timeout" ms
   Serial.setTimeout(timeout);
@@ -542,10 +618,14 @@ int GSMM95::Expect(int timeout)
 	  GSMM95::pconsole->println(GSMM95::gsmBuf);
 	  GSMM95::pconsole->print(F("\tTransition state is : "));
 	  GSMM95::pconsole->println(i);
+	  GSMM95::pconsole->print(F("######## OUT A : "));
+	  GSMM95::pconsole->println(__FUNCTION__); 
 	  return i;
 	}
   }
 
+  GSMM95::pconsole->print(F("######## OUT B : "));
+  GSMM95::pconsole->println(__FUNCTION__); 
   return 0;
 }        
       

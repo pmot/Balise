@@ -125,7 +125,7 @@ void loop () {
 #endif
 
 	if(vitesse> LIMITE_VITESSE_ACCEL) {
-		PRINT_LOG(LOG_TRACE ,F("La vitesse est suffisant importante, on ne tient pas compte de l'accéléromètre"));
+		PRINT_LOG(LOG_TRACE ,F("La vitesse est suffisamment importante, on ne tient pas compte de l'accéléromètre"));
 
 		direction=accelerometerDirection();
 		if(first_loop==false) {
@@ -240,11 +240,11 @@ byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
 
 		if(myGSM.Connect(gprsAPN, gprsLogin, gprsPassword)) {
 			PRINT_LOG(LOG_TRACE , F("GSM Connect: OK"));
+			myGSM.SendHttpReq(server, port, "test");
 		}
 		else {
 			PRINT_LOG(LOG_TRACE , F("GSM Connect: NON OK"));
 		}
-
 
 		//
 		// on copie le début de la requete

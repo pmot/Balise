@@ -46,14 +46,14 @@ const char debug PROGMEM = LOG_TRACE;
 //
 #define LED_PIN		13
 // APN
-const char gprsAPN[] PROGMEM = "websfr";
-const char gprsLogin[] PROGMEM = "";
-const char gprsPassword[] PROGMEM = "";
-const char pinCode[] PROGMEM = "1234";
+#define gprsAPN		 "free" //"websfr"
+#define gprsLogin    ""
+#define gprsPassword ""
+#define pinCode      "9698"
 // Serveur
-const char server[] PROGMEM = "www.geneliere.fr";
-const char port[] PROGMEM = "80";
-const char urlGpsWS[] PROGMEM = "GET /gps/get.php?gps=";
+#define server       "www.geneliere.fr"
+#define port		 "80"
+#define urlGpsWS	 "GET /gps/get.php?gps="
 
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
