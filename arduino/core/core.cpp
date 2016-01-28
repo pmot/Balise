@@ -91,7 +91,7 @@ void setup() {
 #endif
 
 #ifdef GSM_ACTIF
-	myGSM.Init(pinCode);
+	myGSM.Init(pinCode); // , gprsAPN, gprsLogin, gprsPassword);
 #endif
 
 	////////////////////////
@@ -125,12 +125,12 @@ void loop () {
 #endif
 
 	if(vitesse> LIMITE_VITESSE_ACCEL) {
-		PRINT_LOG(LOG_TRACE ,F("La vitesse est suffisamment importante, on ne tient pas compte de l'accéléromètre"));
+		PRINT_LOG(LOG_TRACE, F("La vitesse est suffisamment importante, on ne tient pas compte de l'accéléromètre"));
 
 		direction=accelerometerDirection();
-		if(first_loop==false) {
-				PRINT_LOG(LOG_TRACE,F("Direction:"));
-				PRINT_LOG(LOG_TRACE,direction);
+		if(first_loop == false) {
+				PRINT_LOG(LOG_TRACE, F("Direction:"));
+				PRINT_LOG(LOG_TRACE, direction);
 		}
 		first_loop=true;
 	}
@@ -149,7 +149,7 @@ void loop () {
 			// On réinitialise le buffer mémorisant le sens de circulation au départ
 			//
 			accelerometerReset();
-			first_loop=false;
+			first_loop = false;
 		}
 
 		interrupts();
@@ -157,7 +157,7 @@ void loop () {
 
 
 		if(i2c_receive == true) {
-			PRINT_LOG(LOG_TRACE ,F("\ti2c_receive=true"));
+			PRINT_LOG(LOG_TRACE, F("\ti2c_receive=true"));
 			//
 			// Créer une fonction
 			// pour libérer la pile
@@ -165,9 +165,9 @@ void loop () {
 
 			lis.getYValue(&y);
 
-			PRINT_LOG(LOG_TRACE ,y);
+			PRINT_LOG(LOG_TRACE, y);
 
-			if(y!=0) accelerometerStore(y>0 ? 1 : 0);
+			if(y!=0) accelerometerStore(y > 0 ? 1 : 0);
 
 			i2c_receive=false;
 		}
@@ -175,11 +175,11 @@ void loop () {
 	}
 
 	if(envoi) {
-		PRINT_LOG(LOG_TRACE ,F("Envoi d'une position"));
+		PRINT_LOG(LOG_TRACE, F("Envoi d'une position"));
 #ifdef GSM_ACTIF
 
 		if(!sendMessageLocalisation(&gps,direction)) {
-			PRINT_LOG(LOG_ERROR ,F("Error in sendMessageLocalisation"));
+			PRINT_LOG(LOG_ERROR, F("Error in sendMessageLocalisation"));
 		}
 
 #endif
@@ -240,12 +240,11 @@ byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
 
 		if(myGSM.Connect(gprsAPN, gprsLogin, gprsPassword)) {
 			PRINT_LOG(LOG_TRACE , F("GSM Connect: OK"));
-			myGSM.SendHttpReq(server, port, "test");
 		}
 		else {
 			PRINT_LOG(LOG_TRACE , F("GSM Connect: NON OK"));
 		}
-
+		myGSM.SendHttpReq(server, port, "http://www.geneliere.net/gps/get.php?gps=datatest");
 		//
 		// on copie le début de la requete
 		//

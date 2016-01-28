@@ -59,11 +59,11 @@ void loop() {
   {
     c = consoleSerial.read();
     Serial.print(c);
-    if (c=='.') {
-      delay(1000);
-      Serial.println((char)26);
-      Serial.println();
-    }
+    // if (c=='.') {
+    //  delay(1000);
+    //  Serial.println((char)26);
+    //  Serial.println();
+    // }
   }
 
 }
