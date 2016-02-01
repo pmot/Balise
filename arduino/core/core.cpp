@@ -91,7 +91,14 @@ void setup() {
 #endif
 
 #ifdef GSM_ACTIF
-	myGSM.Init(pinCode); // , gprsAPN, gprsLogin, gprsPassword);
+	////////////////////////
+	// 2 phases :
+	// - HardReset : Boot du modem
+	// - Init : Etape mini pour accrochage au réseau GSM/GPRS
+	////////////////////////
+	myGSM.HardReset();		// Sequence de boot
+	myGSM.Init(pinCode);
+	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
 #endif
 
 	////////////////////////
@@ -118,9 +125,14 @@ void loop () {
 
 	noInterrupts();
 
+#ifdef GSM_ACTIF
+	// On maintient la connexion
+	if (myGSM.NeedToConnect())
+		myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
+#endif
+
 #ifdef GPS_ACTIF
 	gpsRead(&gps, gpsSerial, GPS_READ_TIME);
-
 	vitesse = (short) gps.speed();
 #endif
 
@@ -176,19 +188,12 @@ void loop () {
 
 	if(envoi) {
 		PRINT_LOG(LOG_TRACE, F("Envoi d'une position"));
-#ifdef GSM_ACTIF
-
 		if(!sendMessageLocalisation(&gps,direction)) {
-			PRINT_LOG(LOG_ERROR, F("Error in sendMessageLocalisation"));
+			PRINT_LOG(LOG_ERROR, F("Erreur de sendMessageLocalisation"));
 		}
-
-#endif
 	}
 
-
-
 	delay(1000);
-
 
 	// if (gpsSetData(gps, &myGpsData)) {
 	//	printGpsData(&myGpsData);
@@ -235,40 +240,24 @@ byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
 	char dataToSend[150];
 
 #ifdef GSM_ACTIF
-	if(myGSM.Status()) {
-		PRINT_LOG(LOG_TRACE , F("GSM Status: OK"));
 
-		if(myGSM.Connect(gprsAPN, gprsLogin, gprsPassword)) {
-			PRINT_LOG(LOG_TRACE , F("GSM Connect: OK"));
+	if (myGSM.NeedToConnect()) {
+		PRINT_LOG(LOG_INFO, F("GSM Status: Connexion requise"));
+		if (myGSM.Connect(gprsAPN, gprsLogin, gprsPassword)) {
+			PRINT_LOG(LOG_INFO, F("GSM Status: Connexion reussie, go pour envoyer une position"));
+			myGSM.SendHttpReq(server, port, "http://www.geneliere.net/gps/get.php?gps=datatest");
 		}
-		else {
-			PRINT_LOG(LOG_TRACE , F("GSM Connect: NON OK"));
-		}
-		myGSM.SendHttpReq(server, port, "http://www.geneliere.net/gps/get.php?gps=datatest");
-		//
-		// on copie le début de la requete
-		//
-		strcpy(dataToSend,urlGpsWS);
-
-		PRINT_LOG(LOG_TRACE ,F("Envoi d'une position"));
-		 /*
-
-		if (gpsToString(myGps, dataToSend+strlen(dataToSend))) {
-			printGpsData(&myGpsData);
-		}
-
-		PRINT_LOG(LOG_TRACE ,dataToSend);
-
-		if(!myGSM.SendHttpReq(server, port, dataToSend)) {
-			return 0;
-		}*/
+		else
+			PRINT_LOG(LOG_INFO, F("GSM Status: Connexion echouee"));
 	}
 	else {
-		PRINT_LOG(LOG_INFO, F("GSM Status: NON OK"));
+		PRINT_LOG(LOG_INFO, F("GSM Status: Connexion deja etablie, go pour envoyer une position"));
+		myGSM.SendHttpReq(server, port, "http://www.geneliere.net/gps/get.php?gps=datatest");
 	}
 	// PRINT_LOG(LOG_INFO, myGSM.gsmBuf);
 
 #endif
+
 	return 1;
 }
 

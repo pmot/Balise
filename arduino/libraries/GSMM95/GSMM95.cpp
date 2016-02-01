@@ -12,9 +12,46 @@ GSMM95::GSMM95(byte myPwrKey, SoftwareSerial* pSerial)
   pinMode(GSMM95::pwrKey, OUTPUT);
 }
 
+void GSMM95::HardReset()
+{
+
+	GSMM95::pconsole->print(F("######## IN : "));
+	GSMM95::pconsole->println(__FUNCTION__);
+    
+	// Init sequence, see "M95_HardwareDesign_V1.2.pdf", page 30.
+	// Reset!
+	GSMM95::pconsole->println(F("\tGSM - INIT - Power on the modem"));
+	digitalWrite(GSMM95::pwrKey, LOW);
+	delay(500);
+	digitalWrite(GSMM95::pwrKey, HIGH);
+	delay(5000);
+	GSMM95::pconsole->println(F("\tGSM - INIT - Done"));
+	
+	// Start and Autobauding sequence ("M95_AT_Commands_V1.0.pdf", page 35) 
+	Serial.begin(GSM_BAUDRATE);
+	for (int i=0; i < 3; i++) {
+		Serial.print('A');
+		delay(100);
+		Serial.print('T');
+		delay(100);
+		Serial.print('\r');
+		delay(100);
+	}
+	
+	delay(5000);
+	
+    // Clear buffer !!!
+    GSMM95::pconsole->println(F("\tGSM - PowerOnModem - Flushing the buffer : "));
+    Serial.setTimeout(5000);
+    while (Serial.available()) GSMM95::pconsole->println(Serial.read());
+    GSMM95::pconsole->println(F("\tGSM - PowerOnModem - Done"));
+
+	GSMM95::pconsole->print(F("######## OUT : "));
+	GSMM95::pconsole->println(__FUNCTION__);    
+}  
+
 /*
  * Initialisation du M95:
-	- Reset du modem
 	- Unlock de la sim
 	- Sequence d'init (qos, echo, etc.)
 
@@ -30,32 +67,6 @@ int GSMM95::Init(const char* pinCode)
 
 	GSMM95::pconsole->print(F("######## IN : "));
 	GSMM95::pconsole->println(__FUNCTION__);
-    
-	// Init sequence, see "M95_HardwareDesign_V1.2.pdf", page 30.
-	// Reset!
-	GSMM95::pconsole->println(F("\tGSM - INIT - Power on the modem"));
-	digitalWrite(GSMM95::pwrKey, LOW);
-	delay(500);
-	digitalWrite(GSMM95::pwrKey, HIGH);
-	delay(2000);
-	GSMM95::pconsole->println(F("\tGSM - INIT - Done"));
-	
-	// Start and Autobauding sequence ("M95_AT_Commands_V1.0.pdf", page 35) 
-	Serial.begin(GSM_BAUDRATE);
-	for (int i=0; i < 3; i++) {
-		Serial.print('A');
-		delay(100);
-		Serial.print('T');
-		delay(100);
-		Serial.print('\r');
-		delay(100);
-	}
-
-    // Clear buffer !!!
-    GSMM95::pconsole->println(F("\tGSM - INIT - Flushing the buffer : "));
-    Serial.setTimeout(5000);
-    while (Serial.available()) GSMM95::pconsole->println(Serial.read());
-    GSMM95::pconsole->println(F("\tGSM - INIT - Done"));
 
 	GSMM95::state = GSMINIT_STATE_START;
 
@@ -90,18 +101,18 @@ int GSMM95::Init(const char* pinCode)
 		if(GSMM95::state == GSMINIT_STATE_DISABLE_URC) {
 			GSMM95::pconsole->println(F("\tGSM - INIT - GSMINIT_STATE_DISABLE_URC"));
 			Serial.print(F("AT+QIURC=0\r"));    // disable initial URC presentation   
-			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMINIT_STATE_DISABLE_CREG : GSMSTATE_INVALID;
+			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMINIT_STATE_ENABLE_CREG : GSMSTATE_INVALID;
 		}
-		
-		if(GSMM95::state == GSMINIT_STATE_DISABLE_CREG)	{
-			GSMM95::pconsole->println(F("\tGSM - INIT - GSMINIT_STATE_DISABLE_CREG"));
-			Serial.print(F("AT+CREG=0\r"));
-			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMINIT_STATE_DISABLE_CGREG : GSMSTATE_INVALID;
+
+		if(GSMM95::state == GSMINIT_STATE_ENABLE_CREG)	{
+			GSMM95::pconsole->println(F("\tGSM - INIT - GSMINIT_STATE_ENABLE_CREG"));
+			Serial.print(F("AT+CREG=1\r"));
+			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMINIT_STATE_ENABLE_CGREG : GSMSTATE_INVALID;
 		}
-		
-		if(GSMM95::state == GSMINIT_STATE_DISABLE_CGREG)	{
-			GSMM95::pconsole->println(F("\tGSM - INIT - GSMINIT_STATE_DISABLE_CGREG"));
-			Serial.print(F("AT+CGREG=0\r"));
+
+		if(GSMM95::state == GSMINIT_STATE_ENABLE_CGREG)	{
+			GSMM95::pconsole->println(F("\tGSM - INIT - GSMINIT_STATE_ENABLE_CGREG"));
+			Serial.print(F("AT+CGREG=1\r"));
 			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMINIT_STATE_TEST_SIM_PIN : GSMSTATE_INVALID;
 		}
 
@@ -190,22 +201,14 @@ int GSMM95::Init(const char* pinCode)
 
 }
 
-/*----------------------------------------------------------------------------------------------------------------------------------------------------
-Determine current status of the mobile module e.g. of the GSM/GPRS-Networks
-All current states are returned in the string "gsmBuf"
+/*
+ * 
+ * Affiche diverses infos interessantes.
 
-This function can easily be extended to further queries, e.g. AT+GSN (= query IMEI), 
-AT+QCCID (= query CCID), AT+CIMI (= query IMSI) etc.
- 
-ATTENTION: Please note length of "Status_string" - adjust if necessary
-
-Return value = 0 ---> Error occured 
-Return value = 1 ---> OK
-The public variable "gsmBuf" contains the last response from the mobile module
 */
-int GSMM95::Status()
+int GSMM95::Info()
 {
-	// char Status_string[100];
+	char Status_string[100];
 
 	GSMM95::pconsole->print(F("######## IN : "));
 	GSMM95::pconsole->println(__FUNCTION__);
@@ -213,35 +216,35 @@ int GSMM95::Status()
 	GSMM95::state = 0;
 
 	if(GSMM95::state == 0) {
-		Serial.print(F("AT+CREG?\r"));                                               // Query register state of GSM network
+		Serial.print(F("AT+CREG?\r"));                                  // Query register state of GSM network
 		Expect(1000);
-		// strcpy(Status_string, GSMM95::gsmBuf);
+		strcpy(Status_string, GSMM95::gsmBuf);
 		GSMM95::state += 1;
 	}
 
 	if(GSMM95::state == 1) {
-		Serial.print(F("AT+CGREG?\r"));                                              // Query register state of GPRS network
+		Serial.print(F("AT+CGREG?\r"));                                 // Query register state of GPRS network
 		Expect(1000);
-		// strcat(Status_string, GSMM95::gsmBuf);
+		strcat(Status_string, GSMM95::gsmBuf);
 		GSMM95::state += 1;
 	}
 
 	if(GSMM95::state == 2) {
-		Serial.print(F("AT+CSQ\r"));                                                 // Query the RF signal strength
+		Serial.print(F("AT+CSQ\r"));                                    // Query the RF signal strength
 		Expect(1000);
-		// strcat(Status_string, GSMM95::gsmBuf);
+		strcat(Status_string, GSMM95::gsmBuf);
 		GSMM95::state += 1;
 	}
 
 	if(GSMM95::state == 3) {
-		Serial.print(F("AT+COPS?\r"));                                               // Query the current selected operator
+		Serial.print(F("AT+COPS?\r"));                                  // Query the current selected operator
 		Expect(1000);
-		// strcat(Status_string, GSMM95::gsmBuf);
+		strcat(Status_string, GSMM95::gsmBuf);
 		GSMM95::state += 1;
 	}
 
 	if(GSMM95::state == 4) {
-		// strcpy(GSMM95::gsmBuf, Status_string);
+		strcpy(GSMM95::gsmBuf, Status_string);
 		GSMM95::pconsole->print(F("######## OUT A : "));
 		GSMM95::pconsole->println(__FUNCTION__);
 		return 1;
@@ -249,7 +252,96 @@ int GSMM95::Status()
 
 	GSMM95::pconsole->print(F("######## OUT B : "));
 	GSMM95::pconsole->println(__FUNCTION__);
-	return 0;                                                                     // ERROR while dialing
+	return 0;                                                           // Never reached
+}
+
+/*
+ * 
+ * Status de la connexion
+ * Scrute les changements du status de connexion
+ * Necessite CREG et CGREG actif
+
+*/
+bool GSMM95::NeedToConnect()
+{
+	char c;
+	bool done = false;
+	int i=0;
+	bool b = false;
+	GSMM95::pconsole->print(F("######## IN : "));
+	GSMM95::pconsole->println(__FUNCTION__);
+
+	if (GSMM95::gprsReady) {
+	  // Capture des eventuels evenements CREG et CGREG
+	  // Detecter les deconnexions pour relancer un connect
+	  while (Serial.available() and !done) {
+		c = Serial.read();
+		GSMM95::pconsole->print(c);
+		switch (c) {
+			case 'C' :
+				if (i == 0) i++;
+				else i = 0;
+				break;
+			case 'G' :
+				if ((i == 1) or (i == 3) or (i == 4)) i++;
+				else i = 0;
+				break;
+			case 'R' :
+				if ((i == 1) or (i == 2)) i++;
+				else i = 0;
+				break;
+			case 'E' :
+				if ((i == 2) or (i == 3)) i++;
+				else i = 0;
+				break;				
+			case ':' :
+				if ((i == 4) or (i == 5)) i++;
+				else i = 0;
+				break;
+			case ' ' :
+				if ((i == 5) or (i == 6)) i++;
+				else i = 0;
+				break;
+			case '1' :
+				if ((i == 6) or (i == 7)) i++;
+				else i = 0;
+				break;
+			default : i=0;
+		}
+	  }
+
+	  if (Serial.available()) {
+		c = Serial.read();
+		GSMM95::pconsole->print(c);
+		if (Serial.available()) {
+			c = Serial.read();
+			GSMM95::pconsole->print(c);
+			if (Serial.available()) {
+				c = Serial.read();
+				GSMM95::pconsole->print(c);
+				switch(c) {
+					// Il y a eu un changement ! Et on est enregistre
+					// Go pour un connect !
+					case '1' :		// Home
+					case '5' :		// Roaming
+						b = true;	// On renvoie un go pour connexion
+						gprsReady = false;	// On a eu une deconnexion...
+						break;
+					default :		// Non accroche au reseau pas pret pour un connect
+						gprsReady = false;
+				}
+				GSMM95::pconsole->print(F("######## OUT A : "));
+				GSMM95::pconsole->println(__FUNCTION__);
+				return b;
+			}
+		}
+	  }
+	} // If gpsReady
+	GSMM95::pconsole->print(F("######## OUT B : "));
+	GSMM95::pconsole->println(__FUNCTION__);
+
+	// Pas d'evenement depuis le dernier connect...
+	return gprsReady;                                                          // Never reached
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -278,6 +370,9 @@ The public variable "gsmBuf" contains the last response from the mobile module
 int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 {
 	unsigned long time = millis();
+	
+	// Pas bien car on perd l'etat...
+	// Faire en sorte de repartir au bon endroit pour ne pas avoir a tout reprendre !!!
 	GSMM95::state = GSMCONNECT_STATE_START;
 
 	GSMM95::pconsole->print(F("######## IN : "));
@@ -370,14 +465,22 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 		if(GSMM95::state == GSMCONNECT_STATE_REG_APP)	{
 			GSMM95::pconsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_REG_APP"));
 			Serial.print(F("AT+QIREGAPP\r"));
-			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMCONNECT_STATE_TEST_ACTIVATION : GSMSTATE_INVALID;
+			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMCONNECT_STATE_ACTIVATE : GSMSTATE_INVALID;
 		}
 		
-		if(GSMM95::state == GSMCONNECT_STATE_TEST_ACTIVATION)	{
+		if(GSMM95::state == GSMCONNECT_STATE_ACTIVATE)	{
 			GSMM95::pconsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_TEST_ACTIVATION"));
 			Serial.print(F("AT+QIACT\r"));
-			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMCONNECT_STATE_DONE : GSMSTATE_INVALID;
+			GSMM95::state = Expect(1000) == GSMSTATE_OK ? GSMCONNECT_STATE_TEST_IP_STACK : GSMSTATE_INVALID;
 		}
+
+		if(GSMM95::state == GSMCONNECT_STATE_TEST_IP_STACK)	{
+			GSMM95::pconsole->println(F("\tGSM - CONNECT - GSMCONNECT_TEST_IP_STACK"));
+			Serial.print(F("AT+QISTATE\r"));
+			GSMM95::state = Expect(1000) == GSMSTATE_IP_GPRSACT ? GSMCONNECT_STATE_TEST_IP_STACK : GSMSTATE_INVALID;
+		}
+		// Need : STATE: IP GPRSACT ??????????????????
+
 
 		if(GSMM95::state == GSMCONNECT_STATE_DONE)  {
 			GSMM95::pconsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_DONE"));
@@ -404,33 +507,10 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 	return 0;													  		// ERROR ... no GPRS connect
 }
 
-/*----------------------------------------------------------------------------------------------------------------------------------------------------
-Send HTTP GET 
-This corresponds to the "call" of a URL (such as the with the internet browser) with appended parameters
-
-Parameter:
-char server[50] = Address des server (= URL)
-char parameter[200] = parameters to be appended
-
-ATTENTION: Before using this function a GPRS connection must be set up. 
-
-You may use the "antrax Test Loop Server" for testing. All HTTP GETs to the server are logged in a list,
-that can be viewed on the internet (http://www.antrax.de/WebServices/responderlist.html)
-
-Example for a correct URL for the transmission of the information "HelloWorld":
-
-   http://www.antrax.de/WebServices/responder.php?HelloWorld
-      whereby 
-	   - "www.antrax.de" is the server name 
-	   - "GET /WebServices/responder.php?HelloWorld HTTP/1.1" the parameter
-	
-On the server the URL of the PHP script "responder.php" is accepted and analysed in the subdirectory "WebServices". 
-The part after the "?" corresponds to the transmitted parameters. ATTENTION: The parameters must not 
-contain spaces. The source code of the PHP script "responder.php" is located in the documentation. 
-
-Return value = 0 ---> Error occured 
-Return value = 1 ---> OK
-The public variable "gsmBuf" contains the last response from the mobile module
+/*--------------------
+ * Send HTTP GET 
+ * http://www.antrax.de/downloads/gsm-easy!/quectel-application%20notes/gsm_tcpip_an_v1.1.pdf
+ * http://www.antrax.de/downloads/gsm-easy!/quectel-application%20notes/gsm_http_atc_v1.00.pdf
 */
 int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 {
@@ -441,75 +521,33 @@ int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 
 	GSMM95::state = 0;
 
-/*
-	do {
-		
-		if(GSMM95::state == 0)  {
-			Serial.print(F("AT+QIOPEN=\"TCP\",\""));		    								     // Start up TCP connection
-			Serial.print(server);
-			Serial.print('"');
-			Serial.print(port);
-			Serial.print('\r');
-			if(Expect(2000) == 1) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }      // need CONNECT
-		}
-
-		if(GSMM95::state == 1)  {
-			if(Expect(20000) == 9) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }     // need CONNECT OK or ALREADY CONNECT
-		}
-
-		if(GSMM95::state == 2) {
-			Serial.print(F("AT+QISEND\r"));                                              // Send data to the remote server
-			if(Expect(5000) == 5) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; } 	  // get the prompt ">"
-		}
-
-		if(GSMM95::state == 3) {
-			// for HTTP GET must include: "GET /subdirectory/name.php?test=parameter_to_transmit HTTP/1.1"
-			// "GET /WebServices/responder.php?test=HelloWorld HTTP/1.1"
-			Serial.print(parameter);   // Message-Text
-
-			// Header Field Definitions in http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-			Serial.print(F("\r\nHost: "));                                               // Header Field "Host"
-			Serial.print(server);
-			// Serial.print(F("\r\nUser-Agent: AVEZE"));                                   // Header Field "User-Agent" (MUST be "antrax" when use with portal "WebServices")
-			Serial.print(F("\r\nConnection: close\r\n\r\n"));                            // Header Field "Connection"
-			Serial.write(26);                                                         // CTRL-Z
-			if(Expect(20000) == 10) { GSMM95::state += 1; } else { GSMM95::state = GSMSTATE_INVALID; }    // Congratulations ... the parameter_string was send to the server
-		}
-
-		if(GSMM95::state == 4) {
-			Expect(5000);                    // wait of ack from remote server
-			GSMM95::state += 1;
-		}
-
-		if(GSMM95::state == 5) {
-			GSMM95::pconsole->print(F("######## OUT A : "));
-			GSMM95::pconsole->println(__FUNCTION__); 
-			return 1;				  // GPRS connect successfully ... let's go ahead!
-		}
-
-	}
-	while(GSMM95::state < GSMSTATE_INVALID);
-*/
+	GSMM95::pconsole->print(F("Sending request : "));
+	GSMM95::pconsole->println(parameter); 
 
 	int l = strlen(parameter);
+	GSMM95::pconsole->println(F("\tGSM - SEND - AT+QHTTPURL"));
 	Serial.print(F("AT+QHTTPURL="));
 	Serial.print(l);					// longueur de l'url complete
 	Serial.print(F(",30\r"));			// tmout en s
-	
-	// Need connect
+	// Need CONNECT
 	Expect(10000);
+	delay(1000);
 	
 	Serial.print(parameter);
-	Serial.print(F("\r"));
-	
+	// Serial.print(F("\r"));
 	// Need OK
 	Expect(10000);
+	delay(1000);
 	
+	GSMM95::pconsole->println(F("\tGSM - SEND - AT+QHTTPGET"));
 	Serial.print(F("AT+QHTTPGET=60\r"));
 	Expect(10000);
+	delay(1000);
 	
+	GSMM95::pconsole->println(F("\tGSM - SEND - AT+QHTTPREAD"));
 	Serial.print(F("AT+QHTTPREAD=30\r"));
-	Expect(10000);	
+	Expect(10000);
+	
 	
 	GSMM95::pconsole->print(F("######## OUT A : "));
 	GSMM95::pconsole->println(__FUNCTION__); 
@@ -600,17 +638,20 @@ int GSMM95::Expect(int timeout)
     gsmBuf[index++] = WS[0];
   }
 
+  GSMM95::pconsole->print(F("\tLe modem a envoye : "));
+  GSMM95::pconsole->println(gsmBuf);
+
   //----- analyse the reaction of the mobile module
   for (byte i=0; i < MAX_GSM_STRINGS; i++)
   {
+
 	strcpy_P(expectBuf, (char*)pgm_read_word(&(gsmStrings[i])));
+
 	if(strstr(gsmBuf, expectBuf))
 	{
 	  GSMM95::pconsole->print(F("\tFound : "));
-	  GSMM95::pconsole->print(expectBuf);
-	  GSMM95::pconsole->print(F(" in : "));
-	  GSMM95::pconsole->println(GSMM95::gsmBuf);
-	  GSMM95::pconsole->print(F("\tTransition state is : "));
+	  GSMM95::pconsole->println(expectBuf);
+	  GSMM95::pconsole->print(F("\tNext State : "));
 	  GSMM95::pconsole->println(i);
 	  GSMM95::pconsole->print(F("######## OUT A : "));
 	  GSMM95::pconsole->println(__FUNCTION__); 
