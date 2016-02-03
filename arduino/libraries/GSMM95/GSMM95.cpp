@@ -264,84 +264,80 @@ int GSMM95::Info()
 */
 bool GSMM95::NeedToConnect()
 {
-	char c;
-	bool done = false;
-	int i=0;
-	bool b = false;
-	GSMM95::pconsole->print(F("######## IN : "));
-	GSMM95::pconsole->println(__FUNCTION__);
+  char c;
+  bool done = false;
+  int i=0;
+  bool bNeedToConnect = false;
+  GSMM95::pconsole->print(F("######## IN : "));
+  GSMM95::pconsole->println(__FUNCTION__);
 
-	if (GSMM95::gprsReady) {
-	  // Capture des eventuels evenements CREG et CGREG
-	  // Detecter les deconnexions pour relancer un connect
-	  while (Serial.available() and !done) {
-		c = Serial.read();
-		GSMM95::pconsole->print(c);
-		switch (c) {
-			case 'C' :
-				if (i == 0) i++;
-				else i = 0;
-				break;
-			case 'G' :
-				if ((i == 1) or (i == 3) or (i == 4)) i++;
-				else i = 0;
-				break;
-			case 'R' :
-				if ((i == 1) or (i == 2)) i++;
-				else i = 0;
-				break;
-			case 'E' :
-				if ((i == 2) or (i == 3)) i++;
-				else i = 0;
-				break;				
-			case ':' :
-				if ((i == 4) or (i == 5)) i++;
-				else i = 0;
-				break;
-			case ' ' :
-				if ((i == 5) or (i == 6)) i++;
-				else i = 0;
-				break;
-			case '1' :
-				if ((i == 6) or (i == 7)) i++;
-				else i = 0;
-				break;
-			default : i=0;
-		}
-	  }
+  // Capture des eventuels evenements CREG et CGREG
+  // Detecter les deconnexions pour relancer un connect
+  /*
+  while (Serial.available() and !done) {
+	c = Serial.read();
+	GSMM95::pconsole->print(c);
+	switch (c) {
+		case 'C' :
+			if (i == 0) i++;
+			else i = 0;
+			break;
+		case 'G' :
+			if ((i == 1) or (i == 3) or (i == 4)) i++;
+			else i = 0;
+			break;
+		case 'R' :
+			if ((i == 1) or (i == 2)) i++;
+			else i = 0;
+			break;
+		case 'E' :
+			if ((i == 2) or (i == 3)) i++;
+			else i = 0;
+			break;				
+		case ':' :
+			if ((i == 4) or (i == 5)) i++;
+			else i = 0;
+			break;
+		case ' ' :
+			if ((i == 5) or (i == 6)) i++;
+			else i = 0;
+			break;
+		case '1' :
+			if ((i == 6) or (i == 7)) i++;
+			else i = 0;
+			break;
+		default : i=0;
+	}
+  }
 
-	  if (Serial.available()) {
+  if (Serial.available()) {
+	c = Serial.read();
+	GSMM95::pconsole->print(c);
+	if (Serial.available()) {
 		c = Serial.read();
 		GSMM95::pconsole->print(c);
 		if (Serial.available()) {
 			c = Serial.read();
 			GSMM95::pconsole->print(c);
-			if (Serial.available()) {
-				c = Serial.read();
-				GSMM95::pconsole->print(c);
-				switch(c) {
-					// Il y a eu un changement ! Et on est enregistre
-					// Go pour un connect !
-					case '1' :		// Home
-					case '5' :		// Roaming
-						b = true;	// On renvoie un go pour connexion
-						gprsReady = false;	// On a eu une deconnexion...
-						break;
-					default :		// Non accroche au reseau pas pret pour un connect
-						gprsReady = false;
-				}
-				GSMM95::pconsole->print(F("######## OUT A : "));
-				GSMM95::pconsole->println(__FUNCTION__);
-				return b;
+			switch(c) {
+				// Il y a eu un changement ! Et on est enregistre
+				// Go pour un connect !
+				case '1' :		// Home
+				case '5' :		// Roaming
+					bNeedToConnect = true;	// On renvoie un go pour connexion
+					gprsReady = false;		// On a eu une deconnexion...
+					break;
+				default :		// Non accroche au reseau pas pret pour un connect
+					gprsReady = false;
 			}
 		}
-	  }
-	} // If gpsReady
-	GSMM95::pconsole->print(F("######## OUT B : "));
-	GSMM95::pconsole->println(__FUNCTION__);
+	}
+  }
+  */
+  GSMM95::pconsole->print(F("######## OUT B : "));
+  GSMM95::pconsole->println(__FUNCTION__);
 
-	// Pas d'evenement depuis le dernier connect...
-	return gprsReady;                                                          // Never reached
+  return bNeedToConnect;
 }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------
@@ -393,15 +389,18 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 		if(GSMM95::state == GSMCONNECT_STATE_TEST_NET_REG) {
 			GSMM95::pconsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_TEST_NET_REG"));	
 			Serial.print(F("AT+CREG?\r"));								// Network Registration Report
-			switch(Expect(1000)) {
+			switch(Expect(10000)) {
 				case GSMSTATE_NET_REG_HOME:
 				case GSMSTATE_NET_REG_ROAMING:
+					GSMM95::pconsole->println(F("\tGSM - CONNECT - Registered"));
 					GSMM95::state = GSMCONNECT_STATE_ATTACH_GPRS;
 					break;
 				case GSMSTATE_NET_REG_DENIED:
+					GSMM95::pconsole->println(F("\tGSM - CONNECT - Denied"));
 					GSMM95::state = GSMSTATE_INVALID;
 					break;
 				default:
+					GSMM95::pconsole->println(F("\tGSM - CONNECT - Register in progress"));
 					GSMM95::state = GSMCONNECT_STATE_TEST_NET_REG;
 			}
 		}
@@ -479,8 +478,6 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 			Serial.print(F("AT+QISTATE\r"));
 			GSMM95::state = Expect(1000) == GSMSTATE_IP_GPRSACT ? GSMCONNECT_STATE_TEST_IP_STACK : GSMSTATE_INVALID;
 		}
-		// Need : STATE: IP GPRSACT ??????????????????
-
 
 		if(GSMM95::state == GSMCONNECT_STATE_DONE)  {
 			GSMM95::pconsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_DONE"));
@@ -491,16 +488,14 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 			return 1;													// GPRS connect successfully ... let's go ahead!
 		}
 		
-		if ((millis() - time) > 120000) {
+		if ((millis() - time) > 30000) {
 			GSMM95::pconsole->print(F("######## OUT B : GAME OVER !!!"));
 			GSMM95::pconsole->println(__FUNCTION__);
-			return 0; // On sort au bout de 2 minutes
+			return 0; // On sort au bout de 30s
 		}
 		delay(500);
 	}
 	while(GSMM95::state < GSMSTATE_INVALID);
-	
-	Serial.print(F("AT+QIDEACT\r"));
 	
 	GSMM95::pconsole->print(F("######## OUT C : "));
 	GSMM95::pconsole->println(__FUNCTION__);  
@@ -534,7 +529,7 @@ int GSMM95::SendHttpReq(const char* server, const char* port, char* parameter)
 	delay(1000);
 	
 	Serial.print(parameter);
-	// Serial.print(F("\r"));
+	Serial.print(F("\r"));
 	// Need OK
 	Expect(10000);
 	delay(1000);
@@ -626,11 +621,13 @@ int GSMM95::Expect(int timeout)
   // while(Serial.available()) { Serial.read(); }
   
   //----- wait of the first character for "timeout" ms
+  GSMM95::pconsole->println(F("\tExpect : la"));
   Serial.setTimeout(timeout);
   inByte = Serial.readBytes(WS, 1);
   gsmBuf[index++] = WS[0];
   
   //----- wait of further characters until a pause of 30 ms occures
+  GSMM95::pconsole->println(F("\tExpect : ici"));
   while(inByte > 0)
   {
     Serial.setTimeout(30);

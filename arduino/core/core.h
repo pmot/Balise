@@ -54,19 +54,6 @@ const char debug PROGMEM = LOG_TRACE;
 #define port		 "80"
 #define urlGpsWS	 "GET /gps/get.php?gps="
 
-// http://www.antrax.de/downloads/gsm-easy!/quectel-application%20notes/gsm_http_atc_v1.00.pdf
-// AT+QIFGCNT=0
-// AT+QICSGP=1,"free"
-// AT+QIREGAPP
-// AT+QIACT
-// AT+QIDNSCFG="adresse dns" // AT+QIDNSIP=0 ou 1
-// AT+QHTTPURL=79,30
-// http://api.efxnow.com/DEMOWebServices2.8/Service.asmx/Echo?Message=helloquectel
-// http://65.51.93.50/DEMOWebServices2.8/Service.asmx/Echo?Message=helloquectel
-// AT+QHTTPGET=60
-// AT+QHTTPREAD=30
-// AT+QIDEACT
-
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
 #define GPS_READ_TIME	1000
 // Délai entre deux lectures de position GPS en ms

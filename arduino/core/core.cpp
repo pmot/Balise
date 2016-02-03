@@ -98,7 +98,6 @@ void setup() {
 	////////////////////////
 	myGSM.HardReset();		// Sequence de boot
 	myGSM.Init(pinCode);
-	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
 #endif
 
 	////////////////////////
@@ -127,8 +126,10 @@ void loop () {
 
 #ifdef GSM_ACTIF
 	// On maintient la connexion
-	if (myGSM.NeedToConnect())
-		myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
+	// if (myGSM.NeedToConnect())
+	// Par contre si je mets le connect ici, il reste bloqué !!!
+	// Besoin d'un timer entre l'init et le premier connect ????
+	//	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
 #endif
 
 #ifdef GPS_ACTIF
@@ -241,7 +242,7 @@ byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
 
 #ifdef GSM_ACTIF
 
-	if (myGSM.NeedToConnect()) {
+	/*if (myGSM.NeedToConnect()) {
 		PRINT_LOG(LOG_INFO, F("GSM Status: Connexion requise"));
 		if (myGSM.Connect(gprsAPN, gprsLogin, gprsPassword)) {
 			PRINT_LOG(LOG_INFO, F("GSM Status: Connexion reussie, go pour envoyer une position"));
@@ -250,10 +251,11 @@ byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
 		else
 			PRINT_LOG(LOG_INFO, F("GSM Status: Connexion echouee"));
 	}
-	else {
+	else {*/
+		myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
 		PRINT_LOG(LOG_INFO, F("GSM Status: Connexion deja etablie, go pour envoyer une position"));
-		myGSM.SendHttpReq(server, port, "http://www.geneliere.net/gps/get.php?gps=datatest");
-	}
+		myGSM.SendHttpReq(server, port, "http://www.geneliere.fr/gps/get.php?data=testbalise");
+	//}
 	// PRINT_LOG(LOG_INFO, myGSM.gsmBuf);
 
 #endif
