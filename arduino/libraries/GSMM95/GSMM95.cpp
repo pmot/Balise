@@ -6,10 +6,13 @@ GSMM95::GSMM95(byte myPwrKey, SoftwareSerial* pSerial)
   GSMM95::state = 0;
   GSMM95::pconsole = pSerial;
   GSMM95::pwrKey = myPwrKey;
-  GSMM95::qimux = false;
-  GSMM95::qimode = false;
-  GSMM95::gprsReady = false;
   pinMode(GSMM95::pwrKey, OUTPUT);
+  // Init du context
+  // A garder tout au long du programme
+  GSMM95::pGsmContext = (struct gsmContext*) malloc (sizeof(struct gsmContext));
+  SetQiMux(false);
+  SetQiMode(false);
+  SetGprsState(false);
 }
 
 void GSMM95::HardReset()
@@ -325,10 +328,10 @@ bool GSMM95::NeedToConnect()
 				case '1' :		// Home
 				case '5' :		// Roaming
 					bNeedToConnect = true;	// On renvoie un go pour connexion
-					gprsReady = false;		// On a eu une deconnexion...
+					SetGprsState(false);		// On a eu une deconnexion...
 					break;
 				default :		// Non accroche au reseau pas pret pour un connect
-					gprsReady = false;
+					SetGprsState(false);
 			}
 		}
 	}
@@ -374,8 +377,8 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 	GSMM95::pconsole->print(F("######## IN : "));
 	GSMM95::pconsole->println(__FUNCTION__);
 
-	if (gprsReady) {
-		GSMM95::pconsole->println(F("\tGSM - CONNECT - Seems to be already connected"));
+	if (GetGprsState()) {
+		GSMM95::pconsole->println(F("\tGSM - CONNECT - Already connected"));
 		return 1;
 	}
 	
@@ -436,9 +439,9 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 			// On peut plus bouger
 			if (Expect(1000) == GSMSTATE_OK) {
 				GSMM95::state = GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE;
-				GSMM95::qimux = true;
+				SetQiMux(true);
 			} else {
-				if (qimux) {
+				if (GetQiMux()) {
 					GSMM95::state = GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE;
 				} else {
 					GSMM95::state = GSMSTATE_INVALID;
@@ -452,8 +455,9 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 			// On peut plus bouger
 			if (Expect(1000) == GSMSTATE_OK) {
 				GSMM95::state = GSMCONNECT_STATE_REG_APP;
+				SetQiMode(true);
 			} else {
-				if (qimode) {
+				if (GetQiMode()) {
 					GSMM95::state = GSMCONNECT_STATE_REG_APP;
 				} else {
 					GSMM95::state = GSMSTATE_INVALID;
@@ -484,7 +488,7 @@ int GSMM95::Connect(const char* APN, const char* USER, const char* PWD)
 			GSMM95::pconsole->println(millis() - time);
 			GSMM95::pconsole->print(F("######## OUT A : "));
 			GSMM95::pconsole->println(__FUNCTION__);
-			GSMM95::gprsReady = true;
+			SetGprsState(true);
 			return 1;													// GPRS connect successfully ... let's go ahead!
 		}
 		
@@ -660,5 +664,25 @@ int GSMM95::Expect(int timeout)
   GSMM95::pconsole->println(__FUNCTION__); 
   return 0;
 }        
+
+// Setters and Getters
+void GSMM95::SetGprsState(bool b) {
+  pGsmContext->gprsReady = b;
+}
+bool GSMM95::GetGprsState() {
+  return pGsmContext->gprsReady; 
+}
+void GSMM95::SetQiMux(bool b) {
+  pGsmContext->qiMux = b;
+}
+bool GSMM95::GetQiMux() {
+  return pGsmContext->qiMux;
+}
+void GSMM95::SetQiMode(bool b) {
+  pGsmContext->qiMode = b;
+}
+bool GSMM95::GetQiMode() {
+  return pGsmContext->qiMode;
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------

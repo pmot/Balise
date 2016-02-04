@@ -88,6 +88,12 @@ const char* const gsmStrings[] PROGMEM = {
 	gsmStr7, gsmStr8, gsmStr9, gsmStr10, gsmStr11, gsmStr12, gsmStr13,
 	gsmStr14, gsmStr15, gsmStr16, gsmStr17, gsmStr18, gsmStr19 };
 
+struct gsmContext {
+	  bool qiMux;
+	  bool qiMode;
+	  bool gprsReady;
+};
+
 class GSMM95
 {
     public:      
@@ -100,13 +106,19 @@ class GSMM95
       int Connect(const char*, const char*, const char*);
       int SendHttpReq(const char*, const char*, char*);
       void Disconnect();
+      void SetGprsState(bool);
+      bool GetGprsState();
+      void SetQiMux(bool);
+      bool GetQiMux();
+      void SetQiMode(bool);
+      bool GetQiMode();
 
       char gsmBuf[GSM_BUFSZ];
 	  byte pwrKey;
 	  int state;
-	  bool qimux;
-	  bool qimode;
-	  bool gprsReady;
+	  
+	private:
+	  struct gsmContext* pGsmContext;
 	  SoftwareSerial* pconsole;
       int Expect(int);
       byte Automate(char);
