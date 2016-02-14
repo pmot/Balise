@@ -261,25 +261,35 @@ bool gsmNeedToConnect(struct gsmContext* pGsmContext)
   // Capture des eventuels evenements CREG et CGREG
   // Detecter les deconnexions pour relancer un connect
   while (Serial.available() and !done) {
+	// Risque de boucle... cet automate atttend uniquement les évènements CREG et CGREG
+	// Les URC (pb hard, temp, alim) sont desactivées mais si on les active, se
+	// réserver la possibilité de sortir car pas prises en charge par
+	// le code qui suit.
+	if (millis() - time) > 30000) return true;
 	c = Serial.read();
 	pGsmContext->pConsole->print(c);
 	switch (c) {
+		// Le C de CREG ou CGREG ?
 		case 'C' :
 			if (i == 0) i++;
 			else i = 0;
 			break;
+		// Le G de CGREG ?
 		case 'G' :
 			if ((i == 1) or (i == 3) or (i == 4)) i++;
 			else i = 0;
 			break;
+		// Le R de CREG ou CGREG
 		case 'R' :
 			if ((i == 1) or (i == 2)) i++;
 			else i = 0;
 			break;
+		// Le E de CREG ou CGREG
 		case 'E' :
 			if ((i == 2) or (i == 3)) i++;
 			else i = 0;
 			break;				
+		// Et la suite
 		case ':' :
 			if ((i == 4) or (i == 5)) i++;
 			else i = 0;
@@ -288,6 +298,9 @@ bool gsmNeedToConnect(struct gsmContext* pGsmContext)
 			if ((i == 5) or (i == 6)) i++;
 			else i = 0;
 			break;
+		// 1 : on a activé les notifs CREG et CGREG dans l'init
+		// donc normal de trouver cette valeur après un espace et :
+		// Cf. commandes AT
 		case '1' :
 			if ((i == 6) or (i == 7)) {
 				i++;
@@ -295,34 +308,43 @@ bool gsmNeedToConnect(struct gsmContext* pGsmContext)
 			}
 			else i = 0;
 			break;
+		// Les notifs CREG et CGREG non trouvées, on reçoit quoi la ?
+		// Les URC sont désactivées normalement, ou bien vérifie et corrige le code...
 		default : i=0;
 	}
 	if ((millis() - time) > 500)
 	  return true;
   }
 
+  // Ici on a trouvé un creg ou cgreg
+  // creg ou cgreg : 1, code
+  // code : On peut affiner les erreurs ou succès
+  // 1 : attaché : home
+  // 5 : attaché : roaming
+  // 2 : on cherche
+  // etc.... le pire est 3, denied
   if (Serial.available()) {
+	// on lit la ',' pour trouver le code
 	c = Serial.read();
 	pGsmContext->pConsole->print(c);
 	if (Serial.available()) {
+		// On lit le code
 		c = Serial.read();
 		pGsmContext->pConsole->print(c);
-		if (Serial.available()) {
-			c = Serial.read();
-			pGsmContext->pConsole->print(c);
-			switch(c) {
-				// Il y a eu un changement de l'etat de connexion au reseau
-				// Go pour un connect ?
-				case '1' :		// Home
-				case '5' :		// Roaming
-					bNeedToConnect = true;	// On renvoie un go pour connexion
-					pGsmContext->gprsReady = false;		// On a eu une deconnexion...
-					break;
-				// On pourrait reagir specifiquement sur un register denied
-				default :		// Non accroche au reseau pas pret pour un connect
-					bNeedToConnect = false;
-					pGsmContext->gprsReady = false;
-			}
+		pGsmContext->pConsole->print(c);
+		switch(c) {
+			case '1' :		// Home, c'est l'opérateur du contrat
+			// On pourrait réagir spécifiquement sur le roaming...
+			// désactiver suivant les arrangements entre opérateurs...
+			// Ici on y va...
+			case '5' :		// Roaming
+				bNeedToConnect = true;	// On renvoie un go pour connexion
+				pGsmContext->gprsReady = false;		// On a eu une deconnexion...
+				break;
+			// On pourrait reagir specifiquement sur un register denied
+			default :		// Non accroche au reseau pas pret pour un connect
+				bNeedToConnect = false;
+				pGsmContext->gprsReady = false;
 		}
 	}
   }
@@ -384,11 +406,17 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 			}
 		}
 
+		// Quelquechose à voir avec le bearer.
+		// A vérifier :
+		// on doit se trainer des forfaits...
+		// Par exemple : l'aiguillage de la carte sim
+		// sans data, avec data, sms ou pas, mms...
 		if(pGsmContext->state == GSMCONNECT_STATE_ATTACH_GPRS) {
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_ATTACH_GPRS"));
 			Serial.print(F("AT+CGATT=1\r"));							// attach to GPRS service
 			pGsmContext->state = gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK ? GSMCONNECT_STATE_SET_QIFGCNT : GSMCONNECT_STATE_TEST_NET_REG;
 			// need +CGATT: 1
+			// on a une carte data open ou pas ???
 		}
 		
 		if(pGsmContext->state == GSMCONNECT_STATE_SET_QIFGCNT)	{
@@ -409,13 +437,21 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 			pGsmContext->state = gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK ? GSMCONNECT_STATE_DISABLE_MULTI : GSMSTATE_INVALID;
 		}
 
+		// Les deux sections suivantes montrent une lacune sur la compréhension du fonctionnement du M95
+		// on ne peut changer le comportement du modem sans un hard reset
+
+		// Utilisé une fois après un hard reset, fait partie du context
+		// Cf. ref Quectel M95
 		if(pGsmContext->state == GSMCONNECT_STATE_DISABLE_MULTI)	{
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_DISABLE_MULTI"));
+			// GDTREM : TODO, vérifier la valeur qiMux du context GSM
+			// Un qiMux sur un qiMux génère une "ERROR"
 			Serial.print(F("AT+QIMUX=0\r"));
-			// On peut plus bouger
+			// On peut plus bouger si pas reset hard du modem
 			if (gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK) {
 				pGsmContext->state = GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE;
 				pGsmContext->qiMux = true;
+			// Double vérification... si on a une erreur sur un qiMux...
 			} else {
 				if (pGsmContext->qiMux) {
 					pGsmContext->state = GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE;
@@ -425,13 +461,18 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 			}
 		}
 
+		// Utilisé une fois après un hard reset, fait partie du context
+		// Cf. ref Quectel M95
 		if(pGsmContext->state == GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE)	{
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE"));
+			// GDTREM : TODO, vérifier la valeur qiMode du context GSM
+			// Un qiMode sur un qiMode génère une "ERROR"
 			Serial.print(F("AT+QIMODE=1\r"));
 			// On peut plus bouger qiMode, a moins de faire un hard reset
 			if (gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK) {
 				pGsmContext->state = GSMCONNECT_STATE_REG_APP;
 				pGsmContext->qiMode = true;
+			// Double vérification... sin on a une erreur sur un qiMode...
 			} else {
 				if (pGsmContext->qiMode) {
 					pGsmContext->state = GSMCONNECT_STATE_REG_APP;
@@ -441,6 +482,7 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 			}
 		}
 
+		// 
 		if(pGsmContext->state == GSMCONNECT_STATE_REG_APP)	{
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_REG_APP"));
 			Serial.print(F("AT+QIREGAPP\r"));
