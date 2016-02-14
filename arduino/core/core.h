@@ -1,17 +1,13 @@
 #ifndef __CORE_H__
 #define __CORE_H__
 
-
-
-// #define GPS_ACTIF
+#define GPS_ACTIF
 // #define WIFI_ACTIF
 #define ACCEL_ACTIF
 #define GSM_ACTIF
 
-
 // Identifiant de la balise
 #define	BALISE_ID	"AVEZE"
-
 
 // Mode d'élection des tâches (exclusif)
 // #define ORD_PREEMPT	// Privilégier l'exécution d'une tâche, par défaut
@@ -27,7 +23,6 @@
 #define LOG_TRACE 4
 const char debug PROGMEM = LOG_TRACE;
 #define PRINT_LOG(y,x)  if(debug>=y) { consoleSerial.listen(); consoleSerial.print(__FUNCTION__); consoleSerial.print(F(": ")) ; consoleSerial.println(x); }
-
 
 // Définition des pin RX/TX des modules
 // #define GSM_TX	 0	// UART
@@ -50,9 +45,7 @@ const char debug PROGMEM = LOG_TRACE;
 #define gprsPassword ""
 #define pinCode      "9698"
 // Serveur
-#define server       "www.geneliere.fr"
-#define port		 "80"
-#define urlGpsWS	 "GET /gps/get.php?gps="
+#define url       	 "http://www.geneliere.fr/gps/get.php?data="
 
 // Temps alloué à la lecture des données GPS sur la liaison série en ms
 #define GPS_READ_TIME	1000
@@ -77,7 +70,5 @@ const char debug PROGMEM = LOG_TRACE;
 void printGpsData(struct gpsData *);
 void I2CReceived();
 byte sendMessageLocalisation(TinyGPS *, byte);
-
-
 
 #endif

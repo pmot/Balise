@@ -4,7 +4,7 @@
 #include <Arduino.h>
 #include <SoftwareSerial.h>		// Pour debugger sur la console
 
-#define GSM_BUFSZ		150		// Taille du buffer (circulaire ?)
+#define GSM_BUFSZ		32		// Taille du buffer
 #define GSM_BAUDRATE	115200
 
 // http://www.quectel.com/UploadImage/Downlad/M95_AT_Commands_Manual_V1.2.pdf
@@ -62,16 +62,16 @@
 #define MAX_GSM_STRINGS		20
 #define MAX_GSM_STRING_SZ 	20
 
-const char gsmStr0[] PROGMEM = "SEND OK\r\n";			// 0
-const char gsmStr1[] PROGMEM = "OK\r\n\r\nCONNECT\r\n";	// 1
-const char gsmStr2[] PROGMEM = "CONNECT OK\r\n";		// 2
-const char gsmStr3[] PROGMEM = "SIM PIN\r\n";			// 3
-const char gsmStr4[] PROGMEM = "READY\r\n";				// 4
-const char gsmStr5[] PROGMEM = "1,1\r\n";				// 5 - Registered - HOME
-const char gsmStr6[] PROGMEM = "1,3\r\n";				// 6 - Denied !!!
-const char gsmStr7[] PROGMEM = "1,5\r\n";				// 7 - Registered - ROAMING
-const char gsmStr8[] PROGMEM = "NO CARRIER\r\n";		// 8
-const char gsmStr9[] PROGMEM = "+CGATT: 1\r\n";			// 9
+const char gsmStr0[]  PROGMEM = "SEND OK\r\n";			// 0
+const char gsmStr1[]  PROGMEM = "OK\r\n\r\nCONNECT\r\n";// 1
+const char gsmStr2[]  PROGMEM = "CONNECT OK\r\n";		// 2
+const char gsmStr3[]  PROGMEM = "SIM PIN\r\n";			// 3
+const char gsmStr4[]  PROGMEM = "READY\r\n";			// 4
+const char gsmStr5[]  PROGMEM = "1,1\r\n";				// 5 - Registered - HOME
+const char gsmStr6[]  PROGMEM = "1,3\r\n";				// 6 - Denied !!!
+const char gsmStr7[]  PROGMEM = "1,5\r\n";				// 7 - Registered - ROAMING
+const char gsmStr8[]  PROGMEM = "NO CARRIER\r\n";		// 8
+const char gsmStr9[]  PROGMEM = "+CGATT: 1\r\n";		// 9
 const char gsmStr10[] PROGMEM = "IP ";					// 10
 const char gsmStr11[] PROGMEM = "IP INITIAL\r\n";		// 11
 const char gsmStr12[] PROGMEM = "IP GPRS_ACT\r\n";		// 12
@@ -89,39 +89,30 @@ const char* const gsmStrings[] PROGMEM = {
 	gsmStr14, gsmStr15, gsmStr16, gsmStr17, gsmStr18, gsmStr19 };
 
 struct gsmContext {
-	  bool qiMux;
-	  bool qiMode;
-	  bool gprsReady;
+	  bool qiMux;		//
+	  bool qiMode;		//
+	  bool gprsReady;	// Connecte au GPRS, pret a envoyer des donnees IP
+	  int  state;	//
+	  SoftwareSerial* pConsole;
 };
 
-class GSMM95
-{
-    public:      
-      GSMM95(byte, SoftwareSerial*); // Constructeur
-      void HardReset();
-      // Init : PIN // , APN, USR, PWD
-	  int Init(const char*);
-	  int Info();
-	  bool NeedToConnect();
-      int Connect(const char*, const char*, const char*);
-      int SendHttpReq(const char*, const char*, char*);
-      void Disconnect();
-      void SetGprsState(bool);
-      bool GetGprsState();
-      void SetQiMux(bool);
-      bool GetQiMux();
-      void SetQiMode(bool);
-      bool GetQiMode();
-
-      char gsmBuf[GSM_BUFSZ];
-	  byte pwrKey;
-	  int state;
-	  
-	private:
-	  struct gsmContext* pGsmContext;
-	  SoftwareSerial* pconsole;
-      int Expect(int);
-      byte Automate(char);
-};
+// Initialisation des structures de donnees
+void gsmSetup(struct gsmContext*, SoftwareSerial*);
+// Init hard du modem : PWR KEY
+void gsmHardReset(struct gsmContext*, byte);
+// Init soft du modem : PIN CODE
+int  gsmInit(struct gsmContext*, const char*);
+// Affiche les infos CSQ, CGREG, etc. sur la console
+void gsmInfo();
+// Retourne true si il y a besoin de lancer la connexion
+bool gsmNeedToConnect(struct gsmContext*);
+// Lancer la connexion GPRS : APN, USR, PWD
+int  gsmGprsConnect(struct gsmContext*, const char*, const char*, const char*);
+// Deconnexion GPRS
+void gsmGprsDisconnect(struct gsmContext*);
+// GET url, port, les donnees
+int  gsmHttpRequest(struct gsmContext*, const char*, char*);
+// Lecture retour des commandes AT : buffer, timeout
+int  gsmExpect(struct gsmContext*, char*, int);
 
 #endif
