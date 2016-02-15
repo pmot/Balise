@@ -32,13 +32,11 @@ SoftwareSerial consoleSerial(CONSOLE_RX, CONSOLE_TX);
 // GPS
 SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
 TinyGPS gps;
-
 // ACCELEROMETRE
 LIS331 lis;
-
-
 // carte GSM
-GSMM95 myGSM(GSM_PWRK, &consoleSerial);
+struct gsmContext myGsmContext;
+
 
 
 void setup() {
@@ -69,7 +67,7 @@ void setup() {
 	////////////////////////
 	PRINT_LOG(LOG_INFO ,F("\tGPS begin"));
 	gpsSerial.begin(9600);
-	gpsSetup(&myGpsData);
+	// gpsSetup(&myGpsData);
 	PRINT_LOG(LOG_INFO ,F("\tGPS end"));
 #endif
 
@@ -87,7 +85,6 @@ void setup() {
 	PRINT_LOG(LOG_INFO ,F("\tACCEL end"));
 	pinMode(ACCEL_INT, INPUT_PULLUP);
 	attachInterrupt( digitalPinToInterrupt(ACCEL_INT), I2CReceived, RISING);
-
 #endif
 
 #ifdef GSM_ACTIF
@@ -96,8 +93,10 @@ void setup() {
 	// - HardReset : Boot du modem
 	// - Init : Etape mini pour accrochage au réseau GSM/GPRS
 	////////////////////////
-	myGSM.HardReset();		// Sequence de boot
-	myGSM.Init(pinCode);
+	gsmSetup(&myGsmContext, &consoleSerial);
+	gsmHardReset(&myGsmContext, GSM_PWRK);		// Sequence de boot
+	gsmInit(&myGsmContext, pinCode);
+	gsmGprsConnect(&myGsmContext, gprsAPN, gprsLogin, gprsPassword);
 #endif
 
 	////////////////////////
@@ -122,19 +121,25 @@ void loop () {
 	bool envoi = tempo < memo_tempo ? true : false;
 	memo_tempo = tempo;
 
-	noInterrupts();
+	// noInterrupts();
 
 #ifdef GSM_ACTIF
 	// On maintient la connexion
-	// if (myGSM.NeedToConnect())
-	// Par contre si je mets le connect ici, il reste bloqué !!!
-	// Besoin d'un timer entre l'init et le premier connect ????
-	//	myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
+	PRINT_LOG(LOG_INFO ,F("MAINTIEN CNX GPS BEGIN"));
+	if (gsmNeedToConnect(&myGsmContext))
+	{
+		gsmGprsConnect(&myGsmContext, gprsAPN, gprsLogin, gprsPassword);
+	}
+	PRINT_LOG(LOG_INFO ,F("MAINTIEN CNX GPS END"));
 #endif
 
 #ifdef GPS_ACTIF
+	PRINT_LOG(LOG_INFO, F("GPS READ BEGIN"));
 	gpsRead(&gps, gpsSerial, GPS_READ_TIME);
+	PRINT_LOG(LOG_INFO, F("GPS READ END"));
 	vitesse = (short) gps.speed();
+	PRINT_LOG(LOG_INFO, F("SPEED : "));
+	PRINT_LOG(LOG_INFO, vitesse);
 #endif
 
 	if(vitesse> LIMITE_VITESSE_ACCEL) {
@@ -189,7 +194,7 @@ void loop () {
 
 	if(envoi) {
 		PRINT_LOG(LOG_TRACE, F("Envoi d'une position"));
-		if(!sendMessageLocalisation(&gps,direction)) {
+		if(!sendMessageLocalisation(&gps, direction)) {
 			PRINT_LOG(LOG_ERROR, F("Erreur de sendMessageLocalisation"));
 		}
 	}
@@ -237,26 +242,16 @@ void printGpsData(struct gpsData *pGpsData)
 
 }
 
-byte sendMessageLocalisation(TinyGPS *myGps, byte direction) {
+byte sendMessageLocalisation(TinyGPS *pMyGps, byte direction) {
 	char dataToSend[150];
+	memset(dataToSend, 0, 150);
 
 #ifdef GSM_ACTIF
 
-	/*if (myGSM.NeedToConnect()) {
-		PRINT_LOG(LOG_INFO, F("GSM Status: Connexion requise"));
-		if (myGSM.Connect(gprsAPN, gprsLogin, gprsPassword)) {
-			PRINT_LOG(LOG_INFO, F("GSM Status: Connexion reussie, go pour envoyer une position"));
-			myGSM.SendHttpReq(server, port, "http://www.geneliere.net/gps/get.php?gps=datatest");
-		}
-		else
-			PRINT_LOG(LOG_INFO, F("GSM Status: Connexion echouee"));
-	}
-	else {*/
-		myGSM.Connect(gprsAPN, gprsLogin, gprsPassword);
-		PRINT_LOG(LOG_INFO, F("GSM Status: Connexion deja etablie, go pour envoyer une position"));
-		myGSM.SendHttpReq(server, port, "http://www.geneliere.fr/gps/get.php?data=testbalise");
-	//}
-	// PRINT_LOG(LOG_INFO, myGSM.gsmBuf);
+	if(gpsToString(pMyGps, dataToSend))
+		gsmHttpRequest(&myGsmContext, url, dataToSend);
+	else
+		PRINT_LOG(LOG_INFO, F("No valid GPS data"));
 
 #endif
 

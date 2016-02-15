@@ -68,7 +68,7 @@ bool gpsSetData(TinyGPS *myGps, struct gpsData* pMyGpsData)
 	return valid;
 }
 
-bool gpsToString(TinyGPS *myGps, char* stringBuffer)
+bool gpsToString(TinyGPS *pMyGps, char* stringBuffer)
 {
 	float flat, flon, falt, fspeed;
 	byte bmonth, bday, bhour, bminute, bsecond, bhundredths;
@@ -76,13 +76,13 @@ bool gpsToString(TinyGPS *myGps, char* stringBuffer)
 	unsigned long ufixAge, usat, uhdop, udateAge;
 	bool valid = true;
 
-	myGps->f_get_position(&flat, &flon, &ufixAge);
-	falt = myGps->f_altitude();
-	fspeed = myGps->f_speed_kmph();
-	uhdop = myGps->hdop();
-	usat = myGps->satellites();
+	pMyGps->f_get_position(&flat, &flon, &ufixAge);
+	falt = pMyGps->f_altitude();
+	fspeed = pMyGps->f_speed_kmph();
+	uhdop = pMyGps->hdop();
+	usat = pMyGps->satellites();
 
-	myGps->crack_datetime(&iyear, &bmonth, &bday,
+	pMyGps->crack_datetime(&iyear, &bmonth, &bday,
 			&bhour, &bminute, &bsecond, &bhundredths, &udateAge);
 
 	valid &= (flat != TinyGPS::GPS_INVALID_F_ANGLE);
@@ -96,7 +96,8 @@ bool gpsToString(TinyGPS *myGps, char* stringBuffer)
 
 	if (valid)
 	{
-
+/*
+ * 		formatage des floats ne fonctionne pas... A revoir.
 		sprintf(stringBuffer, "%8.6f,%9.6,%6.2f,%5.2f,%u,%u,%u,%02d/%02d/%02d,%02d:%02d:%02d,%u",
 				flat,
 				flon,
@@ -111,7 +112,8 @@ bool gpsToString(TinyGPS *myGps, char* stringBuffer)
 				bhour, bminute, bsecond,
 
 				udateAge
-		);
+		);*/
+		sprintf(stringBuffer, "%d.%d,%d.%d,%02d/%02d/%02d,%02d:%02d:%02d", (int)flat,int((flat-(int)flat)*10000), (int)flon, int((flon-(int)flon)*10000), bmonth, bday, iyear, bhour, bminute, bsecond);
 	}
 
 	return valid;
