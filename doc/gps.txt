@@ -9,7 +9,7 @@ fix = 1 ou 2.
 2 -> fix DGPS
 
 Trames
-======
+====== 
 $GPRMC
 ------
 Le minimum pour la localisation.
