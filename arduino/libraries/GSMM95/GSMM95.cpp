@@ -265,7 +265,7 @@ bool gsmNeedToConnect(struct gsmContext* pGsmContext)
 	// Les URC (pb hard, temp, alim) sont desactivées mais si on les active, se
 	// réserver la possibilité de sortir car pas prises en charge par
 	// le code qui suit.
-	if (millis() - time) > 30000) return true;
+	if ((millis() - time) > 30000) return true;
 	c = Serial.read();
 	pGsmContext->pConsole->print(c);
 	switch (c) {
@@ -628,10 +628,10 @@ int gsmExpect(struct gsmContext* pGsmContext, char* gsmBuf, int timeout)
 
 	if(strstr(gsmBuf, expectBuf))
 	{
-	  pGsmContext->pConsole->print(F("\tFound : "));
-	  pGsmContext->pConsole->println(expectBuf);
-	  pGsmContext->pConsole->print(F("\tNext State : "));
-	  pGsmContext->pConsole->println(i);
+	  // pGsmContext->pConsole->print(F("\tFound : "));
+	  // pGsmContext->pConsole->println(expectBuf);
+	  // pGsmContext->pConsole->print(F("\tNext State : "));
+	  // pGsmContext->pConsole->println(i);
 	  pGsmContext->pConsole->print(F("######## OUT A : "));
 	  pGsmContext->pConsole->println(__FUNCTION__); 
 	  return i;

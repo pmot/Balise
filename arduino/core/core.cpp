@@ -67,7 +67,6 @@ void setup() {
 	////////////////////////
 	PRINT_LOG(LOG_INFO ,F("\tGPS begin"));
 	gpsSerial.begin(9600);
-	// gpsSetup(&myGpsData);
 	PRINT_LOG(LOG_INFO ,F("\tGPS end"));
 #endif
 
@@ -89,14 +88,18 @@ void setup() {
 
 #ifdef GSM_ACTIF
 	////////////////////////
-	// 2 phases :
-	// - HardReset : Boot du modem
-	// - Init : Etape mini pour accrochage au réseau GSM/GPRS
+	// 4 phases :
+	// - Init du contexte GSM
+	// - Hard Reset du modem
+	// - Init du modem, y compris unlock de la SIM
+	// - Connect GPRS
 	////////////////////////
+	PRINT_LOG(LOG_INFO ,F("\tGSM begin"));
 	gsmSetup(&myGsmContext, &consoleSerial);
-	gsmHardReset(&myGsmContext, GSM_PWRK);		// Sequence de boot
+	gsmHardReset(&myGsmContext, GSM_PWRK);
 	gsmInit(&myGsmContext, pinCode);
 	gsmGprsConnect(&myGsmContext, gprsAPN, gprsLogin, gprsPassword);
+	PRINT_LOG(LOG_INFO ,F("\tGSM end"));
 #endif
 
 	////////////////////////
@@ -121,24 +124,22 @@ void loop () {
 	bool envoi = tempo < memo_tempo ? true : false;
 	memo_tempo = tempo;
 
-	// noInterrupts();
-
 #ifdef GSM_ACTIF
-	// On maintient la connexion
-	PRINT_LOG(LOG_INFO ,F("MAINTIEN CNX GPS BEGIN"));
+	// Maintient de la connexion
+	PRINT_LOG(LOG_TRACE, F("MAINTIENT CNX GPS BEGIN"));
 	if (gsmNeedToConnect(&myGsmContext))
 	{
 		gsmGprsConnect(&myGsmContext, gprsAPN, gprsLogin, gprsPassword);
 	}
-	PRINT_LOG(LOG_INFO ,F("MAINTIEN CNX GPS END"));
+	PRINT_LOG(LOG_TRACE, F("MAINTIENT CNX GPS END"));
 #endif
 
 #ifdef GPS_ACTIF
-	PRINT_LOG(LOG_INFO, F("GPS READ BEGIN"));
+	PRINT_LOG(LOG_TRACE, F("GPS READ BEGIN"));
 	gpsRead(&gps, gpsSerial, GPS_READ_TIME);
-	PRINT_LOG(LOG_INFO, F("GPS READ END"));
-	vitesse = (short) gps.speed();
-	PRINT_LOG(LOG_INFO, F("SPEED : "));
+	PRINT_LOG(LOG_TRACE, F("GPS READ END"));
+	vitesse = (short) gps.f_speed_kmph();
+	PRINT_LOG(LOG_INFO, F("SPEED (km/h): "));
 	PRINT_LOG(LOG_INFO, vitesse);
 #endif
 
@@ -201,10 +202,6 @@ void loop () {
 
 	delay(1000);
 
-	// if (gpsSetData(gps, &myGpsData)) {
-	//	printGpsData(&myGpsData);
-	// }
-
 }
 
 void  I2CReceived()
@@ -214,45 +211,17 @@ void  I2CReceived()
 	// PRINT_LOG(LOG_TRACE ,F("END"));
 }
 
-
-void printGpsData(struct gpsData *pGpsData)
-{
-	consoleSerial.listen();
-	PRINT_LOG(LOG_INFO, F("GPS"));
-	// Latitude
-	PRINT_LOG(LOG_INFO, F("** LATITUDE: "));PRINT_LOG(LOG_INFO,pGpsData->latitude);
-	// Longitude
-	PRINT_LOG(LOG_INFO, F("** LONGITUDE: "));PRINT_LOG(LOG_INFO,pGpsData->longitude);
-	// Altitude
-	PRINT_LOG(LOG_INFO, F("** ALTITUDE: "));PRINT_LOG(LOG_INFO,pGpsData->altitude);
-	// Speed
-	PRINT_LOG(LOG_INFO, F("** SPEED: "));PRINT_LOG(LOG_INFO,pGpsData->speed);
-	// Fix Age
-	PRINT_LOG(LOG_INFO, F("** Fix Age: "));PRINT_LOG(LOG_INFO,pGpsData->fixAge);
-	// HDOP
-	PRINT_LOG(LOG_INFO, F("** HDOP: "));PRINT_LOG(LOG_INFO,pGpsData->hdop);
-	// Satellites
-	PRINT_LOG(LOG_INFO, F("** Nb SATS: "));PRINT_LOG(LOG_INFO,pGpsData->satellites);
-	// Date
-	PRINT_LOG(LOG_INFO, F("** Date: "));PRINT_LOG(LOG_INFO,pGpsData->date);
-	// Time
-	PRINT_LOG(LOG_INFO, F("** Time: "));PRINT_LOG(LOG_INFO,pGpsData->time);
-	// Date Age
-	PRINT_LOG(LOG_INFO, F("** Date Age: "));PRINT_LOG(LOG_INFO,pGpsData->dateAge);
-
-}
-
 byte sendMessageLocalisation(TinyGPS *pMyGps, byte direction) {
 	char dataToSend[150];
 	memset(dataToSend, 0, 150);
 
 #ifdef GSM_ACTIF
-
-	if(gpsToString(pMyGps, dataToSend))
+	if(gpsToString(pMyGps, dataToSend)) {
 		gsmHttpRequest(&myGsmContext, url, dataToSend);
-	else
+	}
+	else {
 		PRINT_LOG(LOG_INFO, F("No valid GPS data"));
-
+	}
 #endif
 
 	return 1;

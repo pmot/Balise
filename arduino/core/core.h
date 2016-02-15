@@ -59,7 +59,7 @@ const char debug PROGMEM = LOG_TRACE;
 #define SEND_TO_GROUND_DELAY	60000
 
 
-#define LIMITE_VITESSE_ACCEL 	4
+#define LIMITE_VITESSE_ACCEL 	4  // km/h
 #define FREQUENCE_ENVOI_DEFAUT	15 // doit être inférieure ou égale à 255
 
 
