@@ -45,19 +45,20 @@ bool gpsToString(TinyGPS *pMyGps, char* stringBuffer)
 
 	if (valid)
 	{
-		sprintf(stringBuffer, "%d.%d,%d.%d,%d.%d,%d.%d,%u,%u,%u,%02d/%02d/%02d,%02d:%02d:%02d,%u",
 		
+		sprintf(stringBuffer, "%d.%d,%d.%d,%d.%d,%d.%d,%lu,%lu,%lu,%04d-%02d-%02dT%02d:%02d:%02d.%03dZ,%lu",
+			// Position, vitesse
 			(int)flat, int((flat-(int)flat)*10000),
 			(int)flon, int((flon-(int)flon)*10000),
 			(int)falt, int((falt-(int)falt)*10000),
 			(int)fspeed, int((fspeed-(int)fspeed)*10000),
-			
+			// Fiabilité : nombre de satellite, hdop
 			usat,
 			uhdop,
 			ufixAge,
-			
-			bmonth, bday, iyear, bhour, bminute, bsecond,
-		
+			// Date au format ISO 8601
+			iyear, bmonth, bday, bhour, bminute, bsecond, bhundredths,
+			//
 			udateAge
 		);
 	}

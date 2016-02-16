@@ -111,7 +111,7 @@ int  gsmGprsConnect(struct gsmContext*, const char*, const char*, const char*);
 // Deconnexion GPRS
 void gsmGprsDisconnect(struct gsmContext*);
 // GET url, port, les donnees
-int  gsmHttpRequest(struct gsmContext*, const char*, char*);
+int  gsmHttpRequest(struct gsmContext*, const char*, const char*, char*);
 // Lecture retour des commandes AT : buffer, timeout
 int  gsmExpect(struct gsmContext*, char*, int);
 

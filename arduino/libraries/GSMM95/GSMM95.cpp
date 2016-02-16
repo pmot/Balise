@@ -530,7 +530,7 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
  * http://www.antrax.de/downloads/gsm-easy!/quectel-application%20notes/gsm_tcpip_an_v1.1.pdf
  * http://www.antrax.de/downloads/gsm-easy!/quectel-application%20notes/gsm_http_atc_v1.00.pdf
 */
-int gsmHttpRequest(struct gsmContext* pGsmContext, const char* url, char* data)
+int gsmHttpRequest(struct gsmContext* pGsmContext, const char* url, const char* numEngin, char* data)
 {
 	char gsmBuf[GSM_BUFSZ];
 	unsigned long time = millis();
@@ -540,9 +540,11 @@ int gsmHttpRequest(struct gsmContext* pGsmContext, const char* url, char* data)
 
 	pGsmContext->pConsole->print(F("Sending request : "));
 	pGsmContext->pConsole->print(url);
+	pGsmContext->pConsole->print(numEngin);
+	pGsmContext->pConsole->print(',');
 	pGsmContext->pConsole->println(data);
 
-	int l = strlen(url) + strlen(data);
+	int l = strlen(url) + strlen(numEngin) + 1 + strlen(data);
 	pGsmContext->pConsole->println(F("\tGSM - SEND - AT+QHTTPURL"));
 	Serial.print(F("AT+QHTTPURL="));
 	Serial.print(l);					// longueur de l'url complete
@@ -552,6 +554,8 @@ int gsmHttpRequest(struct gsmContext* pGsmContext, const char* url, char* data)
 	delay(1000);
 
 	Serial.print(url);
+	Serial.print(numEngin);
+	Serial.print(',');
 	Serial.print(data);
 	Serial.print(F("\r"));
 	// Need OK

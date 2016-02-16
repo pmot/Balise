@@ -217,7 +217,7 @@ byte sendMessageLocalisation(TinyGPS *pMyGps, byte direction) {
 
 #ifdef GSM_ACTIF
 	if(gpsToString(pMyGps, dataToSend)) {
-		gsmHttpRequest(&myGsmContext, url, dataToSend);
+		gsmHttpRequest(&myGsmContext, url, NUMENGIN, dataToSend);
 	}
 	else {
 		PRINT_LOG(LOG_INFO, F("No valid GPS data"));

@@ -8,6 +8,7 @@
 
 // Identifiant de la balise
 #define	BALISE_ID	"AVEZE"
+#define	NUMENGIN	"CC7101"
 
 // Mode d'élection des tâches (exclusif)
 // #define ORD_PREEMPT	// Privilégier l'exécution d'une tâche, par défaut
