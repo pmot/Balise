@@ -406,17 +406,11 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 			}
 		}
 
-		// Quelquechose à voir avec le bearer.
-		// A vérifier :
-		// on doit se trainer des forfaits...
-		// Par exemple : l'aiguillage de la carte sim
-		// sans data, avec data, sms ou pas, mms...
 		if(pGsmContext->state == GSMCONNECT_STATE_ATTACH_GPRS) {
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_ATTACH_GPRS"));
 			Serial.print(F("AT+CGATT=1\r"));							// attach to GPRS service
 			pGsmContext->state = gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK ? GSMCONNECT_STATE_SET_QIFGCNT : GSMCONNECT_STATE_TEST_NET_REG;
 			// need +CGATT: 1
-			// on a une carte data open ou pas ???
 		}
 		
 		if(pGsmContext->state == GSMCONNECT_STATE_SET_QIFGCNT)	{
@@ -430,31 +424,24 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 			Serial.print(F("AT+QICSGP=1,\""));				    		// Select GPRS as the bearer
 			Serial.print(APN);
 			Serial.print(F("\",\""));
-			// Serial.print(USER);
+			Serial.print(USER);
 			Serial.print(F("\",\""));
-			// Serial.print(PWD);
+			Serial.print(PWD);
 			Serial.print(F("\"\r"));
 			pGsmContext->state = gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK ? GSMCONNECT_STATE_DISABLE_MULTI : GSMSTATE_INVALID;
 		}
 
-		// Les deux sections suivantes montrent une lacune sur la compréhension du fonctionnement du M95
-		// on ne peut changer le comportement du modem sans un hard reset
-
 		// Utilisé une fois après un hard reset, fait partie du context
-		// Cf. ref Quectel M95
 		if(pGsmContext->state == GSMCONNECT_STATE_DISABLE_MULTI)	{
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_DISABLE_MULTI"));
-			// GDTREM : TODO, vérifier la valeur qiMux du context GSM
-			// Un qiMux sur un qiMux génère une "ERROR"
-			Serial.print(F("AT+QIMUX=0\r"));
-			// On peut plus bouger si pas reset hard du modem
-			if (gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK) {
+			if (pGsmContext->qiMux) {
 				pGsmContext->state = GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE;
-				pGsmContext->qiMux = true;
-			// Double vérification... si on a une erreur sur un qiMux...
 			} else {
-				if (pGsmContext->qiMux) {
+				Serial.print(F("AT+QIMUX=0\r"));
+				// On peut plus bouger si pas reset hard du modem
+				if (gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK) {
 					pGsmContext->state = GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE;
+					pGsmContext->qiMux = true;
 				} else {
 					pGsmContext->state = GSMSTATE_INVALID;
 				}
@@ -465,17 +452,14 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 		// Cf. ref Quectel M95
 		if(pGsmContext->state == GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE)	{
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_ENABLE_TRANSPARENT_MODE"));
-			// GDTREM : TODO, vérifier la valeur qiMode du context GSM
-			// Un qiMode sur un qiMode génère une "ERROR"
-			Serial.print(F("AT+QIMODE=1\r"));
-			// On peut plus bouger qiMode, a moins de faire un hard reset
-			if (gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK) {
+			if (pGsmContext->qiMode) {
 				pGsmContext->state = GSMCONNECT_STATE_REG_APP;
-				pGsmContext->qiMode = true;
-			// Double vérification... sin on a une erreur sur un qiMode...
 			} else {
-				if (pGsmContext->qiMode) {
+				Serial.print(F("AT+QIMODE=1\r"));
+				// On peut plus bouger qiMode, a moins de faire un hard reset
+				if (gsmExpect(pGsmContext, gsmBuf, 1000) == GSMSTATE_OK) {
 					pGsmContext->state = GSMCONNECT_STATE_REG_APP;
+					pGsmContext->qiMode = true;
 				} else {
 					pGsmContext->state = GSMSTATE_INVALID;
 				}
