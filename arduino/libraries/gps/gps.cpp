@@ -45,13 +45,17 @@ bool gpsToString(TinyGPS *pMyGps, char* stringBuffer)
 
 	if (valid)
 	{
+		// Afficher des floats...
+		unsigned long int a,b;
+		a =     (flat-(int)flat) *1000000;
+		b =     (flon-(int)flon) *1000000;
 		
-		sprintf(stringBuffer, "%d.%d,%d.%d,%d.%d,%d.%d,%lu,%lu,%lu,%04d-%02d-%02dT%02d:%02d:%02d.%03dZ,%lu",
+		sprintf(stringBuffer, "%d.%lu,%d.%lu,%d.%d,%d.%d,%lu,%lu,%lu,%04d-%02d-%02dT%02d:%02d:%02d.%03dZ,%lu",
 			// Position, vitesse
-			(int)flat, int((flat-(int)flat)*10000),
-			(int)flon, int((flon-(int)flon)*10000),
-			(int)falt, int((falt-(int)falt)*10000),
-			(int)fspeed, int((fspeed-(int)fspeed)*10000),
+			(int)flat,   a,
+			(int)flon,   b,
+			(int)falt,   int((falt-(int)falt) *100),
+			(int)fspeed, int((fspeed-(int)fspeed) *100),
 			// Fiabilité : nombre de satellite, hdop
 			usat,
 			uhdop,

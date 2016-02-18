@@ -560,16 +560,14 @@ int gsmHttpRequest(struct gsmContext* pGsmContext, const char* url, const char* 
 	Serial.print(F("\r"));
 	// Need OK
 	gsmExpect(pGsmContext, gsmBuf, 10000);
-	delay(1000);
 
 	pGsmContext->pConsole->println(F("\tGSM - SEND - AT+QHTTPGET"));
 	Serial.print(F("AT+QHTTPGET=60\r"));
 	gsmExpect(pGsmContext, gsmBuf, 10000);
-	delay(1000);
 
 	pGsmContext->pConsole->println(F("\tGSM - SEND - AT+QHTTPREAD"));
 	Serial.print(F("AT+QHTTPREAD=30\r"));
-	gsmExpect(pGsmContext, gsmBuf, 10000);
+	gsmExpect(pGsmContext, gsmBuf, 1000);
 
 	pGsmContext->pConsole->print(F("######## OUT : "));
 	pGsmContext->pConsole->println(__FUNCTION__); 
@@ -627,15 +625,10 @@ int gsmExpect(struct gsmContext* pGsmContext, char* gsmBuf, int timeout)
   //----- analyse the reaction of the mobile module
   for (byte i=0; i < MAX_GSM_STRINGS; i++)
   {
-
 	strcpy_P(expectBuf, (char*)pgm_read_word(&(gsmStrings[i])));
 
 	if(strstr(gsmBuf, expectBuf))
 	{
-	  // pGsmContext->pConsole->print(F("\tFound : "));
-	  // pGsmContext->pConsole->println(expectBuf);
-	  // pGsmContext->pConsole->print(F("\tNext State : "));
-	  // pGsmContext->pConsole->println(i);
 	  pGsmContext->pConsole->print(F("######## OUT A : "));
 	  pGsmContext->pConsole->println(__FUNCTION__); 
 	  return i;
