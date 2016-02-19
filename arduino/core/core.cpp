@@ -37,9 +37,6 @@ LIS331 lis;
 // carte GSM
 struct gsmContext myGsmContext;
 
-char prout[]="AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAaaa";
-
-
 void setup() {
 
 
@@ -171,10 +168,6 @@ void loop () {
 			accelerometerReset();
 			first_loop = false;
 		}
-
-		interrupts();
-		attachInterrupt( 2 , I2CReceived, RISING);
-
 
 		if(i2c_receive == true) {
 			PRINT_LOG(LOG_TRACE, F("\ti2c_receive=true"));
