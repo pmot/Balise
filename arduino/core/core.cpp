@@ -11,6 +11,7 @@
 // GPS
 #include <TinyGPS.h>
 #include "gps.h"
+
 // I2C
 #include <Wire.h>
 
@@ -39,15 +40,13 @@ struct gsmContext myGsmContext;
 
 void setup() {
 
-
 	////////////////////////
 	// CONSOLE
 	////////////////////////
 	consoleSerial.begin(115200);
-	PRINT_LOG(LOG_INFO ,F(""));
-	PRINT_LOG(LOG_INFO ,F("#########################"));
-	PRINT_LOG(LOG_INFO ,F("BEGIN"));
-
+	PRINT_LOG(LOG_INFO, F(""));
+	PRINT_LOG(LOG_INFO, F("#########################"));
+	PRINT_LOG(LOG_INFO, F("BEGIN"));
 
 	////////////////////////
 	// LED
@@ -63,25 +62,25 @@ void setup() {
 	////////////////////////
 	// GPS
 	////////////////////////
-	PRINT_LOG(LOG_INFO ,F("\tGPS begin"));
+	PRINT_LOG(LOG_INFO, F("\tGPS begin"));
 	gpsSerial.begin(9600);
-	PRINT_LOG(LOG_INFO ,F("\tGPS end"));
+	PRINT_LOG(LOG_INFO, F("\tGPS end"));
 #endif
 
 #ifdef ACCEL_ACTIF
 	////////////////////////
 	// Accéléromètre
 	////////////////////////
-	PRINT_LOG(LOG_INFO ,F("\tACCEL begin"));
+	PRINT_LOG(LOG_INFO, F("\tACCEL begin"));
 
 	Wire.begin();
 
 	if(!accelerometerSetup(&lis)) {
-		PRINT_LOG(LOG_ERROR ,F("\tACCEL init error"));
+		PRINT_LOG(LOG_ERROR, F("\tACCEL init error"));
 	}
-	PRINT_LOG(LOG_INFO ,F("\tACCEL end"));
+	PRINT_LOG(LOG_INFO, F("\tACCEL end"));
 	pinMode(ACCEL_INT, INPUT_PULLUP);
-	attachInterrupt( digitalPinToInterrupt(ACCEL_INT), I2CReceived, RISING);
+	attachInterrupt(digitalPinToInterrupt(ACCEL_INT), I2CReceived, RISING);
 #endif
 
 #ifdef GSM_ACTIF
@@ -92,12 +91,12 @@ void setup() {
 	// - Init du modem, y compris unlock de la SIM
 	// - Connect GPRS
 	////////////////////////
-	PRINT_LOG(LOG_INFO ,F("\tGSM begin"));
+	PRINT_LOG(LOG_INFO, F("\tGSM begin"));
 	gsmSetup(&myGsmContext, &consoleSerial);
 	gsmHardReset(&myGsmContext, GSM_PWRK);
 	gsmInit(&myGsmContext, pinCode);
 	gsmGprsConnect(&myGsmContext, gprsAPN, gprsLogin, gprsPassword);
-	PRINT_LOG(LOG_INFO ,F("\tGSM end"));
+	PRINT_LOG(LOG_INFO, F("\tGSM end"));
 #endif
 
 	////////////////////////
@@ -106,7 +105,7 @@ void setup() {
 	////////////////////////
 	digitalWrite(LED_PIN, LOW);
 
-	PRINT_LOG(LOG_INFO ,F("END"));
+	PRINT_LOG(LOG_INFO, F("END"));
 }
 
 
