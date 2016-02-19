@@ -421,6 +421,9 @@ int gsmGprsConnect(struct gsmContext* pGsmContext, const char* APN, const char* 
 
 		if(pGsmContext->state == GSMCONNECT_STATE_SET_PDP)   {
 			pGsmContext->pConsole->println(F("\tGSM - CONNECT - GSMCONNECT_STATE_SET_PDP"));
+			pGsmContext->pConsole->println(APN);
+			pGsmContext->pConsole->println(USER);
+			pGsmContext->pConsole->println(PWD);
 			Serial.print(F("AT+QICSGP=1,\""));				    		// Select GPRS as the bearer
 			Serial.print(APN);
 			Serial.print(F("\",\""));

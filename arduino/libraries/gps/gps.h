@@ -16,4 +16,8 @@ void gpsRead(TinyGPS*, SoftwareSerial, unsigned long);
 // true si tout va bien (les données sont valides)
 // false si une des données est invalide, ou s'il n'y a pas le fix
 bool gpsToString(TinyGPS*, char*);
+
+// Retourne la partie décimale du float f, avec une précision p
+unsigned long int fDec(float, unsigned long int);
+
 #endif

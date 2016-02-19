@@ -44,16 +44,11 @@ bool gpsToString(TinyGPS *pMyGps, char* stringBuffer)
 	valid &= (udateAge != TinyGPS::GPS_INVALID_AGE);
 
 	if (valid)
-	{
-		// Afficher des floats...
-		unsigned long int a,b;
-		a =     (flat-(int)flat) *1000000;
-		b =     (flon-(int)flon) *1000000;
-		
+	{		
 		sprintf(stringBuffer, "%d.%lu,%d.%lu,%d.%d,%d.%d,%lu,%lu,%lu,%04d-%02d-%02dT%02d:%02d:%02d.%03dZ,%lu",
 			// Position, vitesse
-			(int)flat,   a,
-			(int)flon,   b,
+			(int)flat,   fDec(flat, 1000000),
+			(int)flon,   fDec(flon, 1000000),
 			(int)falt,   int((falt-(int)falt) *100),
 			(int)fspeed, int((fspeed-(int)fspeed) *100),
 			// Fiabilité : nombre de satellite, hdop
@@ -69,3 +64,7 @@ bool gpsToString(TinyGPS *pMyGps, char* stringBuffer)
 
 	return valid;
 }
+
+unsigned long int fDec(float fval, unsigned long int uprec) {
+	return (fval-(int)fval) * uprec;
+}	
