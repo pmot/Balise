@@ -116,7 +116,7 @@ void setup() {
 
 
 bool i2c_receive=false;
-short vitesse=0;
+short vitesse=-1;
 byte memo_tempo=0;
 bool first_loop=false;
 
@@ -142,7 +142,8 @@ void loop () {
 	PRINT_LOG(LOG_TRACE, F("GPS READ BEGIN"));
 	gpsRead(&gps, gpsSerial, GPS_READ_TIME);
 	PRINT_LOG(LOG_TRACE, F("GPS READ END"));
-	vitesse = (short) gps.f_speed_kmph();
+	if (!gpsFix(&gps)) vitesse = -1;
+	else vitesse = (short) gps.f_speed_kmph();
 	PRINT_LOG(LOG_INFO, F("SPEED (km/h): "));
 	PRINT_LOG(LOG_INFO, vitesse);
 #endif

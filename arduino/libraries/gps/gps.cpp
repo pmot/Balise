@@ -43,6 +43,9 @@ bool gpsToString(TinyGPS *pMyGps, char* stringBuffer)
 	valid &= (ufixAge != TinyGPS::GPS_INVALID_AGE);
 	valid &= (udateAge != TinyGPS::GPS_INVALID_AGE);
 
+	// On a perdu le fix depuis au moins 2s -> plus de GPS...
+	if (ufixAge >= 2000) return false;
+	
 	if (valid)
 	{		
 		sprintf(stringBuffer, "%d.%lu,%d.%lu,%d.%d,%d.%d,%lu,%lu,%lu,%04d-%02d-%02dT%02d:%02d:%02d.%03dZ,%lu",
@@ -68,3 +71,11 @@ bool gpsToString(TinyGPS *pMyGps, char* stringBuffer)
 unsigned long int fDec(float fval, unsigned long int uprec) {
 	return (fval-(int)fval) * uprec;
 }	
+
+bool gpsFix(TinyGPS *pMyGps) {
+	float flat, flon;
+	unsigned long ufixAge;
+	pMyGps->f_get_position(&flat, &flon, &ufixAge);
+	if ((ufixAge != TinyGPS::GPS_INVALID_AGE) and (ufixAge < 2000)) return true;
+	else return false;
+}

@@ -20,4 +20,6 @@ bool gpsToString(TinyGPS*, char*);
 // Retourne la partie décimale du float f, avec une précision p
 unsigned long int fDec(float, unsigned long int);
 
+bool gpsFix(TinyGPS*);
+
 #endif
