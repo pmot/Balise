@@ -7,6 +7,12 @@
 
 
 #define PRINT_LOG(y,x)  if(debug>=y) { consoleSerial.listen(); consoleSerial.print(__FUNCTION__); consoleSerial.print(F(": ")) ; consoleSerial.println(x); }
+#define LED_ON	digitalWrite(LED_PIN, HIGH);
+#define LED_OFF	digitalWrite(LED_PIN, LOW);
+#define LED_FLASH(x)	digitalWrite(LED_PIN, HIGH); delay(x); digitalWrite(LED_PIN, LOW);
+#define LED_FLASH2(x)	LED_FLASH(x); delay(150); LED_FLASH(x);
+#define LED_FLASH3(x)	LED_FLASH(x); delay(150); LED_FLASH(x); delay(150); LED_FLASH(x);
+
 
 // GPS
 #include <TinyGPS.h>
@@ -56,7 +62,7 @@ void setup() {
 	////////////////////////
 	// On allume la LED le temps de l'intialisation
 	////////////////////////
-	digitalWrite(LED_PIN, HIGH);
+	LED_ON
 
 #ifdef GPS_ACTIF
 	////////////////////////
@@ -103,7 +109,7 @@ void setup() {
 	// Fin de l'initialisation
 	// on éteint la LED
 	////////////////////////
-	digitalWrite(LED_PIN, LOW);
+	LED_OFF
 
 	PRINT_LOG(LOG_INFO, F("END"));
 }
@@ -126,6 +132,7 @@ void loop () {
 	PRINT_LOG(LOG_TRACE, F("MAINTIENT CNX GPS BEGIN"));
 	if (gsmNeedToConnect(&myGsmContext))
 	{
+		LED_FLASH2(100);
 		gsmGprsConnect(&myGsmContext, gprsAPN, gprsLogin, gprsPassword);
 	}
 	PRINT_LOG(LOG_TRACE, F("MAINTIENT CNX GPS END"));
@@ -210,9 +217,11 @@ byte sendMessageLocalisation(TinyGPS *pMyGps, byte direction) {
 
 #ifdef GSM_ACTIF
 	if(gpsToString(pMyGps, dataToSend)) {
+		LED_FLASH(100);
 		gsmHttpRequest(&myGsmContext, url, NUMENGIN, dataToSend);
 	}
 	else {
+		LED_FLASH3(100);
 		PRINT_LOG(LOG_INFO, F("No valid GPS data"));
 	}
 #endif
