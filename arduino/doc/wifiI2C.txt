@@ -15,7 +15,8 @@ Lien : http://thewanderingengineer.com/2014/02/17/attiny-i2c-slave/
 Com wifiI2C/WiFly
 -----------------
 La communication entre le module wifiI2C et le module Wifi s'effectue en Serial.
-Lien : https://learn.sparkfun.com/tutorials/tiny-avr-programmer-hookup-guide/attiny85-use-hints
+Lien: https://learn.sparkfun.com/tutorials/tiny-avr-programmer-hookup-guide/attiny85-use-hints
+Et: http://www.ernstc.dk/arduino/tinycom.html
 
 Opérations
 ==========
