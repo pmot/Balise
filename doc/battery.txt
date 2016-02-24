@@ -1,0 +1,12 @@
+Quelques liens :
+
+Le powerboost 1000C est disponible en France :
+
+http://www.amazon.fr/Chargeur-PowerBoost-1000-Boost-rechargeable/dp/B017MT3GFW/ref=pd_sim_sbs_147_3?ie=UTF8&dpID=21Cjc64mxyL&dpSrc=sims&preST=_AC_UL160_SR160%2C160_&refRID=1EA18XMWK1QMT5CZMRX1#productDetails
+
+43 Euros pour deux pièces + 6 Euros de port...
+
+Possibilité, deux lignes lipo / powerboost 1000C en // avec ce circuit :
+
+http://forums.adafruit.com/viewtopic.php?f=19&p=441729
+

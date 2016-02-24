@@ -1,0 +1,46 @@
+ATTENTION : travail en cours
+
+Description
+===========
+Le module wifiI2C effectue le pilotage de la carte WIFI.
+Il permet d'alléger le travail de la MCU.
+Le module est basé sur un Attiny85 5v.
+
+Com wifiI2C/MCU
+---------------
+La communication entre la MCU et le module s'effectue en I2C.
+Le module opère en tant qu'esclave et la MCU en tant que maître.
+Lien : http://thewanderingengineer.com/2014/02/17/attiny-i2c-slave/
+
+Com wifiI2C/WiFly
+-----------------
+La communication entre le module wifiI2C et le module Wifi s'effectue en Serial.
+Lien : https://learn.sparkfun.com/tutorials/tiny-avr-programmer-hookup-guide/attiny85-use-hints
+
+Opérations
+==========
+Initialisation du module Wifi
+-----------------------------
+La MCU demandera expressement l'initialisation du module wifi.
+
+Scan d'AP
+---------
+La MCU demandera le démarrage et l'arrêt du scan.
+Le scan des AP et l'enregistrement des données sont réalisés par le module wifiI2C,
+en boucle.
+La MCU interrogera le module wifiI2C pour obtenir les SSID/MAC disponibles. 
+Chaque scan doit être taggué par un timestamp. La MCU connaitera l'âge de la donnée
+afin de réaliser le rapprochement avec la localisation.
+
+Compilation
+===========
+Arduino
+-------
+Les Attiny ne sont pas supportés nativement par l'environnement, tout du moins
+jusqu'à la version 1.6.
+Lien pour ajouter le support : http://highlowtech.org/?p=1695
+
+Chaine de compilation
+---------------------
+Le module wifiI2C dispose de son propre Makefile : wifiI2C/Makefile.
+

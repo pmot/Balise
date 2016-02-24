@@ -5,9 +5,9 @@ WiFi
 La communication s'effectue via SoftwareSerial.
 
 Arduino Pro
-RX: Pin TX
-TX: Pin RX
-Initialisation: SoftwareSerial wifiSerial(RX, TX);
+RX: Pin 5
+TX: Pin 4
+Initialisation: SoftwareSerial wifiSerial(5, 4);
 
 GPS
 ===
