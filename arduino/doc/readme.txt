@@ -59,7 +59,10 @@ Application note : (à définir)
 
 Module WiFi
 ===========
-
+Shield WiFly v1.2.
+http://www.seeedstudio.com/wiki/Wifi_shield_v1.2
+A base de RN-171.
+http://www.seeedstudio.com/wiki/images/e/ef/WiFly-RN-171.pdf
 
 TODO :
 
