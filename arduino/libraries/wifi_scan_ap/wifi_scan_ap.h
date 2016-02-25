@@ -4,21 +4,19 @@
 #include <Arduino.h>
 #include <WiFly.h>
 
-#define NB_SSID_SCAN 			1
 #define MAX_LENGTH_SCAN_LINE 	110
-#define LENGTH_SSID 			33
-#define LENGTH_MAX_ADDRESS 		18
+#define	WIFI_RSSI_LENGTH		4	// -200
+#define WIFI_SSID_LENGTH 		32	// une chaine...
+#define WIFI_MAC_ADDR_LENGTH 	17  // xx:xx:xx:xx:xx:xx
 
-bool wifiScanSetup(WiFly);
-bool wifiScanAp(WiFly);
-uint8_t wifiScanApGetResult(struct apEntry*, WiFly);
+const char wifiCompactModeStr[] PROGMEM = "set sys printlvl 0x4000\r";
+const char wifiScanStr[]  PROGMEM = "scan\r";
+const char wifiStartStr[] PROGMEM = "SCAN:";
+const char wifiStopStr[]  PROGMEM = "END:";	
+	
+bool wifiSetup(WiFly);
+bool wifiScan(WiFly);
+int wifiGetResult(WiFly, bool, char*);
 int wifiScanReadLn(WiFly, char *);
-
-struct apEntry
-{
-	int rssi;
-	char ssid[LENGTH_SSID]; // = "UNKNOWN";
-	char mac[LENGTH_MAX_ADDRESS];  // = "xx:xx:xx:xx:xx:xx";
-};
 
 #endif

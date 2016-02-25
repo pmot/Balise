@@ -1,117 +1,84 @@
 // Code qui permet de lister les AP visibles
 #include "wifi_scan_ap.h"
 
-bool wifiScanSetup(WiFly myWiFly) {
+bool wifiSetup(WiFly myWiFly) {
 	// Scan, nouveau mode nécessite un firmware >= 2.22
-
-	const static char newMode[] PROGMEM = "set sys printlvl 0x4000\r";
 	if (myWiFly.version() < 2.22)
+	{
 		return false;
-
-	if (!myWiFly.sendCommand(newMode))
-		return false;
-	else
+	}
+	
+	if (myWiFly.sendCommand(wifiCompactModeStr))
+	{
 		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
-bool wifiScanAp(WiFly myWiFly) {
+bool wifiScan(WiFly myWiFly) {
 	// un scan wifi via le RN 171 met environ 2500ms par défaut:
 	// - 200ms par canal
 	// - 13 canaux
-	const static char scanCmd[] PROGMEM = "scan\r";
-	if (!myWiFly.sendCommand(scanCmd))
-		return false;
-	else
+	if (myWiFly.sendCommand(wifiScanStr))
+	{
 		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
-uint8_t wifiScanApGetResult(struct apEntry* ptAP, WiFly myWiFly) {
-
-	// un scan wifi via le RN 171 met environ 2500ms par défaut:
-	// - 200ms par canal
-	// - 13 canaux
-	// Retourne la liste des AP au format JSON :
-	// Sauver de la SRAM avec PROGMEM
-	const static char startPattern[] PROGMEM = "SCAN:";
-	const static char stopPattern[] PROGMEM = "END:";
-	const static char separator[] PROGMEM = ",";
-	const static char space[] PROGMEM = " ";
-
-	uint8_t nbScanned = 0;
-	uint8_t nbAdded = 0;
-	bool wifiScanBegin = false;
-	bool wifiScanEnd = false;
-	char* p = NULL;
-	unsigned long end_millis;
+int wifiGetResult(WiFly myWiFly, bool first, char* res) {
+	char *p, *pRSSI, *pSSID, *pMAC;
+	bool found = false;
+	int field = 1;
+	char c;
+	unsigned long time = millis();
 	char newLine[MAX_LENGTH_SCAN_LINE];
 
-	//
-	// Analyse de la sortie, 500ms max !
-	//
-	end_millis = millis() + 500;
-
-
-	while ((!wifiScanEnd) && (millis() < end_millis)) {
-		if (wifiScanReadLn(myWiFly,newLine)) {
-			if (!wifiScanBegin) {
-				if (strstr(newLine, startPattern)) {
-					wifiScanBegin = true;
-					//
-					// Le nombre d'AP visibles vient après le ':'
-					//
-					p = strtok(newLine, space);
-					p = strtok(NULL, space);
-					nbScanned = atoi(p); // nb de SSID trouvé
-					if (nbScanned == 0)
-						wifiScanEnd = true;
-					else {
-						nbScanned = min(nbScanned,NB_SSID_SCAN); // la taille du tableau est limitée
-					}
-				}
+	p = pRSSI = pSSID = pMAC = NULL;
+	
+	// On cherche SCAN:
+	if (first) {
+		while (!found) {
+			if (wifiScanReadLn(myWiFly, newLine)) {
+				if (strstr(newLine, wifiStartStr)) found = true;
 			}
-			else {
-				if (strstr(newLine, stopPattern))
-					wifiScanEnd = true;
-				else {
-					/////////////////////////////////////////////////////////
-					// Nouvelle entrée apEntry à logger dans la liste apList
-					// Parsing newLine séparation des champs par des ','
-					// RSSI : champ 3
-					// MAC : champ 6
-					// SSID : champ 7
-					/////////////////////////////////////////////////////////
-					p = strtok(newLine, separator);
-					p = strtok(NULL, separator);
-					p = strtok(NULL, separator);
-					if (p) ptAP[nbAdded].rssi = atoi(p);
-					p = strtok(NULL, separator);
-					p = strtok(NULL, separator);
-					p = strtok(NULL, separator);
-					p = strtok(NULL, separator);
-					p = strtok(NULL, separator);
-					if (p) {
-						strncpy(ptAP[nbAdded].mac, p, LENGTH_MAX_ADDRESS-1);
-						ptAP[nbAdded].mac[LENGTH_MAX_ADDRESS-1]='\0';
-					}
-					p = strtok(NULL, separator);
-					if (p) {
-						strncpy(ptAP[nbAdded].ssid, p, LENGTH_SSID-1);
-						ptAP[nbAdded].ssid[LENGTH_SSID-1]='\0';
-					}
-					if (p) nbAdded++;
-
-					if (nbAdded >= nbScanned) wifiScanEnd = true;
-
-				}
-			}
+			// SCAN: non trouvé dans les temps
+			if ((millis() - time) > 500) return -1;
 		}
 	}
-
-	return nbAdded;
+	
+	// On lit une ligne
+	while (wifiScanReadLn(myWiFly, newLine)) {
+		if ((millis() - time) > 500) return -1;
+	}
+	
+	// END:
+	if (strstr(newLine, wifiStopStr)) return 0;
+	
+	// Split de la chaine
+	// N°, Chan, RSSI, Security Mode, MAC, SSID
+	p = newLine;
+	while (((c = *p) != NULL) and (field < 6)) {
+		if (c == ',') {
+			field++;
+			*p = '\0';
+		}
+		p++;
+		if (field == 3) pRSSI = p;
+		if (field == 5) pMAC = p;
+		if (field == 6) pSSID = p;
+	}
+	sprintf(res, "%s,%s,%s", pRSSI, pSSID, pMAC);
+	return strlen(res);
 }
 
 int wifiScanReadLn(WiFly myWiFly, char *ptrLine) {
-
 	bool endOfLine = false;
 	char c=' ';
 	int i=0;
@@ -130,4 +97,3 @@ int wifiScanReadLn(WiFly myWiFly, char *ptrLine) {
 
 	return i;
 }
-

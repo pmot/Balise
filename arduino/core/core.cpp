@@ -41,8 +41,12 @@ SoftwareSerial gpsSerial(GPS_RX, GPS_TX);
 TinyGPS gps;
 // ACCELEROMETRE
 LIS331 lis;
-// carte GSM
+// GSM
 struct gsmContext myGsmContext;
+// WIFI
+SoftwareSerial wifiSerial(WIFI_RX, WIFI_TX);
+WiFly wifly(&wifiSerial);
+
 
 void setup() {
 
@@ -104,6 +108,15 @@ void setup() {
 	gsmGprsConnect(&myGsmContext, gprsAPN, gprsLogin, gprsPassword);
 	PRINT_LOG(LOG_INFO, F("\tGSM end"));
 #endif
+
+#ifdef WIFI_ACTIF
+	// Scan des SSID/MAC
+	PRINT_LOG(LOG_INFO, F("WIFI begin"));
+	wifiSerial.listen();
+	wifiSetup(wifly);
+	PRINT_LOG(LOG_INFO, F("WIFI end"));
+#endif
+
 
 	////////////////////////
 	// Fin de l'initialisation
@@ -216,6 +229,13 @@ byte sendMessageLocalisation(TinyGPS *pMyGps, byte direction) {
 	char dataToSend[150];
 	memset(dataToSend, 0, 150);
 
+#ifdef WIFI_ACTIF
+	// Scan des SSID/MAC
+	PRINT_LOG(LOG_TRACE, F("WIFI SCAN"));
+	wifiSerial.listen();
+	wifiScan(wifly);
+#endif
+
 #ifdef GSM_ACTIF
 	if(gpsToString(pMyGps, dataToSend)) {
 		LED_FLASH(100);
@@ -226,6 +246,23 @@ byte sendMessageLocalisation(TinyGPS *pMyGps, byte direction) {
 		PRINT_LOG(LOG_INFO, F("No valid GPS data"));
 	}
 #endif
+
+#ifdef WIFI_ACTIF
+	// Resultats
+	PRINT_LOG(LOG_TRACE, F("WIFI READ BEGIN"));
+	memset(dataToSend, 0, 150);
+	wifiSerial.listen();
+	if (wifiGetResult(wifly, true, dataToSend) > 0) {
+		PRINT_LOG(LOG_TRACE, dataToSend);
+		wifiSerial.listen();
+		while(wifiGetResult(wifly, true, dataToSend) > 0) {
+			PRINT_LOG(LOG_TRACE, dataToSend);
+			wifiSerial.listen();
+		}
+	}
+	PRINT_LOG(LOG_TRACE, F("WIFI READ END"));
+#endif
+
 
 	return 1;
 }
