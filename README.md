@@ -8,9 +8,7 @@ doc/
 	Contient aussi une description des outils.
 arduino/
 --------
-	Pourquoi "arduino", car à ce stade du projet, la MCU est une Arduino
-	Pro.
-	Contient tout ce qui est lié au matériel.
+	Contient tout ce qui est lié au matériel. La MCU est une Arduino Pro.
 
 build/
 ------
