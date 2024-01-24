@@ -4,7 +4,7 @@ Détection du sens de la marche par accéléromètre.
 
 doc/
 ----
-	Vous y trouverez la description du fonctionnement de la Balise.
+	Description du fonctionnement de la Balise.
 	Contient aussi une description des outils.
 arduino/
 --------
